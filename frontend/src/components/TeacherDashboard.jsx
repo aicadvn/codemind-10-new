@@ -14,16 +14,34 @@ import {
 } from 'lucide-react';
 import { SCHOOL_CLASSES, isTeacherAccount } from '../config/schoolConfig';
 import { fetchClassStudents, exportToNCKH_CSV } from '../services/analyticsService';
+import { useAuth } from '../context/AuthContext';
 
 export default function TeacherDashboard({ isOpen, onClose }) {
-  const [selectedClass, setSelectedClass] = useState('all');
+  const { isAdmin, assignedClasses } = useAuth();
+  
+  // Kiểm tra quyền: Super Admin hoặc giáo viên quản lý toàn trường
+  const isSuper = isAdmin || (assignedClasses || []).includes('all');
+  const allowedClasses = isSuper 
+    ? SCHOOL_CLASSES 
+    : SCHOOL_CLASSES.filter(cls => (assignedClasses || []).includes(cls));
+
+  const [selectedClass, setSelectedClass] = useState(isSuper ? 'all' : (allowedClasses[0] || '10A1'));
   const [searchTerm, setSearchTerm] = useState('');
   const [students, setStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Đồng bộ lớp mặc định nếu là giáo viên được giao quyền lớp cụ thể
+  useEffect(() => {
+    if (!isSuper && selectedClass === 'all' && allowedClasses.length > 0) {
+      setSelectedClass(allowedClasses[0]);
+    }
+  }, [isSuper, allowedClasses, selectedClass]);
+
   const loadData = async (className) => {
     setIsLoading(true);
-    const data = await fetchClassStudents(className);
+    // Nếu giáo viên chỉ phụ trách lớp cụ thể, chỉ truy vấn lớp đó
+    const queryClass = isSuper ? className : (className === 'all' ? (allowedClasses[0] || '10A1') : className);
+    const data = await fetchClassStudents(queryClass);
     // Lọc bỏ triệt để tài khoản giáo viên (đảm bảo chỉ có dữ liệu học sinh)
     setStudents((data || []).filter(s => !isTeacherAccount(s)));
     setIsLoading(false);
@@ -137,8 +155,10 @@ export default function TeacherDashboard({ isOpen, onClose }) {
               onChange={(e) => setSelectedClass(e.target.value)}
               className="bg-gray-50 border border-gray-300 text-gray-700 text-xs rounded-xl px-3 py-2 font-bold focus:ring-2 focus:ring-primary-500 outline-none"
             >
-              <option value="all">Tất cả các lớp (10 lớp: 10A1 - 10D4)</option>
-              {SCHOOL_CLASSES.map(cls => (
+              {isSuper && (
+                <option value="all">Tất cả các lớp (10 lớp: 10A1 - 10D4)</option>
+              )}
+              {allowedClasses.map(cls => (
                 <option key={cls} value={cls}>Lớp {cls}</option>
               ))}
             </select>

@@ -51,13 +51,16 @@ export default function Sidebar({
   onSelectLesson, 
   onOpenInstruction, 
   onOpenDiary, 
-  onOpenDashboard 
+  onOpenDashboard,
+  onOpenAdminPortal
 }) {
   const { 
     currentUser, 
     userRole, 
     userClass, 
     isTeacher, 
+    isAdmin,
+    assignedClasses,
     logout, 
     completedLessons, 
     toggleCompleteLesson,
@@ -172,8 +175,17 @@ export default function Sidebar({
         </div>
       )}
 
-      {/* Nút Chức năng Đặc biệt: Dashboard (Giáo viên) HOẶC Sổ tay Săn Bug (Học sinh) */}
+      {/* Nút Chức năng Đặc biệt: Quản trị (Admin) / Dashboard (Giáo viên) / Sổ tay Săn Bug (Học sinh) */}
       <div className="p-3 bg-white border-b border-gray-100 space-y-2">
+        {isAdmin && (
+          <button
+            onClick={onOpenAdminPortal}
+            className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-xs border border-amber-300"
+          >
+            <ShieldCheck size={16} className="text-slate-950" />
+            Trang Quản Trị Hệ Thống
+          </button>
+        )}
         {isTeacher ? (
           <div className="space-y-1.5">
             <button
@@ -181,7 +193,7 @@ export default function Sidebar({
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow text-xs"
             >
               <BarChart3 size={15} />
-              Bảng điều khiển sư phạm (10 lớp)
+              Bảng điều khiển sư phạm ({isAdmin ? '10 lớp' : 'Lớp quản lý'})
             </button>
             <button
               onClick={onOpenDiary}

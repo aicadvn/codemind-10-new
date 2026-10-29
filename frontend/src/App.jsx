@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import Chatbot from './components/Chatbot';
@@ -9,17 +9,39 @@ import InstructionModal from './components/InstructionModal';
 import ClassSelectModal from './components/ClassSelectModal';
 import TeacherDashboard from './components/TeacherDashboard';
 import StudentDiaryModal from './components/StudentDiaryModal';
+import AdminPortal from './components/AdminPortal';
+import UnregisteredStudentModal from './components/UnregisteredStudentModal';
 import { Menu, MessageSquare, Code } from 'lucide-react';
 
 function MainApp() {
-  const { currentUser, needsClassSelection } = useAuth();
+  const { 
+    currentUser, 
+    needsClassSelection, 
+    isAdmin, 
+    isAccessBlocked, 
+    blockedEmail, 
+    recheckAccess, 
+    logout, 
+    autoOpenAdmin, 
+    setAutoOpenAdmin 
+  } = useAuth();
+
   const [activeLesson, setActiveLesson] = useState(null);
   const [activeTab, setActiveTab] = useState('chat'); // 'sidebar', 'chat', 'editor'
   const [errorToAnalyze, setErrorToAnalyze] = useState(null);
   const [isInstructionOpen, setIsInstructionOpen] = useState(false);
   const [isDiaryOpen, setIsDiaryOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isAdminPortalOpen, setIsAdminPortalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // Tự động mở Trang Quản Trị Hệ Thống ngay sau khi Super Admin đăng nhập
+  useEffect(() => {
+    if (autoOpenAdmin) {
+      setIsAdminPortalOpen(true);
+      if (setAutoOpenAdmin) setAutoOpenAdmin(false);
+    }
+  }, [autoOpenAdmin, setAutoOpenAdmin]);
 
   const handleLessonSelect = (lesson, preferredTab = null) => {
     setActiveLesson(lesson);
@@ -92,6 +114,7 @@ function MainApp() {
             onOpenInstruction={() => setIsInstructionOpen(true)}
             onOpenDiary={() => setIsDiaryOpen(true)}
             onOpenDashboard={() => setIsDashboardOpen(true)}
+            onOpenAdminPortal={() => setIsAdminPortalOpen(true)}
           />
         </div>
 
@@ -109,8 +132,8 @@ function MainApp() {
       {/* Modal Hướng Dẫn Sử Dụng */}
       <InstructionModal isOpen={isInstructionOpen} onClose={() => setIsInstructionOpen(false)} />
 
-      {/* Modal Onboarding Chọn Lớp 10A1 - 10D4 cho Học sinh mới */}
-      <ClassSelectModal isOpen={needsClassSelection} />
+      {/* Modal Onboarding Chọn Lớp 10A1 - 10D4 cho Học sinh mới (nếu chưa có lớp) */}
+      <ClassSelectModal isOpen={needsClassSelection && !isAccessBlocked} />
 
       {/* Modal Sổ Tay Săn Bug Cá Nhân cho Học Sinh */}
       <StudentDiaryModal 
@@ -121,6 +144,27 @@ function MainApp() {
 
       {/* Bảng Điều Khiển Sư Phạm & Xuất Dữ Liệu NCKH cho Giáo Viên */}
       <TeacherDashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
+
+      {/* Cửa sổ Popup chặn học sinh chưa được nhập vào hệ thống */}
+      <UnregisteredStudentModal
+        isOpen={isAccessBlocked}
+        userEmail={blockedEmail || currentUser?.email}
+        userDisplayName={currentUser?.displayName}
+        onLogout={logout}
+        onRetry={recheckAccess}
+      />
+
+      {/* Trang Quản Trị Hệ Thống Toàn Quyền Dành Cho Super Admin Cô Trần Thị Ngà */}
+      <AdminPortal
+        isOpen={isAdminPortalOpen}
+        onClose={() => setIsAdminPortalOpen(false)}
+        onOpenTeacherDashboard={() => {
+          setIsAdminPortalOpen(false);
+          setIsDashboardOpen(true);
+        }}
+        onGoToLearning={() => setIsAdminPortalOpen(false)}
+        onLogout={logout}
+      />
 
     </div>
   );

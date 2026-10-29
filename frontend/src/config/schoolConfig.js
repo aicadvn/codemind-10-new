@@ -1,31 +1,52 @@
 // Cấu hình danh mục Nhà trường, Phân quyền Giáo viên và Danh sách Lớp học
 // Trường THPT Lạng Giang số 1 (Năm học 2026 - 2027)
 
-// 1. Danh sách Email Giáo viên được Whitelist (Tự động cấp quyền Teacher khi đăng nhập Google)
+// 0. Thông tin Quản trị viên Tối cao (Super Admin)
+export const SUPER_ADMIN_EMAIL = 'tranthingalg1@gmail.com';
+export const SUPER_ADMIN_NAME = 'Trần Thị Ngà';
+export const SUPER_ADMIN_TITLE = 'Trần Thị Ngà — Quản trị hệ thống';
+
+// Thông tin hỗ trợ dành cho học sinh chưa được cấp quyền
+export const ADMIN_CONTACT = {
+  name: 'Cô Trần Thị Ngà',
+  role: 'Quản trị hệ thống CodeMind 10',
+  phone: '0975 702 636',
+  email: 'smilers.thp@gmail.com'
+};
+
+// Kiểm tra nhanh tài khoản Quản trị viên tối cao
+export const isSuperAdmin = (email) => {
+  return (email || '').toLowerCase().trim() === SUPER_ADMIN_EMAIL.toLowerCase().trim();
+};
+
+// 1. Danh sách Email Giáo viên mặc định ban đầu
 export const TEACHER_EMAILS = [
+  'tranthingalg1@gmail.com',  // Cô Trần Thị Ngà - Quản trị hệ thống (Toàn khối 10)
   'smilers.thp@gmail.com',    // Cô Trần Thị Ngà - GV Tin học THPT Lạng Giang số 1
-  'tranthingalg1@gmail.com',  // Cô Trần Thị Ngà - GV Tin học THPT Lạng Giang số 1
   'nguyentrunghoa@gmail.com'  // Thầy Nguyễn Trung Hòa
 ].map(email => email.toLowerCase().trim());
 
 // 2. Chi tiết cấu hình Giáo viên và Mã PIN Bảo mật riêng
 export const TEACHER_PROFILES = {
+  'tranthingalg1@gmail.com': {
+    name: 'Cô Trần Thị Ngà',
+    role: 'Quản trị hệ thống (Quản trị giáo viên & 10 lớp)',
+    school: 'THPT Lạng Giang số 1',
+    assignedClasses: ['all'],
+    pins: ['NGA_LG1_2026', '261088', '1088']
+  },
   'smilers.thp@gmail.com': {
     name: 'Cô Trần Thị Ngà',
     role: 'Giáo viên phụ trách môn Tin học 10',
     school: 'THPT Lạng Giang số 1',
-    pins: ['NGA_LG1_2026', '261088', '1088']
-  },
-  'tranthingalg1@gmail.com': {
-    name: 'Cô Trần Thị Ngà',
-    role: 'Giáo viên phụ trách môn Tin học 10',
-    school: 'THPT Lạng Giang số 1',
+    assignedClasses: ['all'],
     pins: ['NGA_LG1_2026', '261088', '1088']
   },
   'nguyentrunghoa@gmail.com': {
     name: 'Thầy Nguyễn Trung Hòa',
     role: 'Giáo viên cố vấn Tin học',
     school: 'THPT Lạng Giang số 1',
+    assignedClasses: ['10A1'],
     pins: ['HOA_LG1_2026', '261099', '1099']
   }
 };

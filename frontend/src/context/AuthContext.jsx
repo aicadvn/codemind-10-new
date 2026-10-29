@@ -7,12 +7,26 @@ import {
   signOut, 
   onAuthStateChanged, 
   isFirebaseConfigured,
-  doc,
-  setDoc,
-  getDoc,
-  serverTimestamp
+  doc, 
+  setDoc, 
+  getDoc, 
+  collection,
+  query,
+  where,
+  getDocs,
+  serverTimestamp 
 } from '../firebase';
-import { TEACHER_EMAILS, TEACHER_PIN, VALID_TEACHER_PINS } from '../config/schoolConfig';
+import { 
+  SUPER_ADMIN_EMAIL, 
+  SUPER_ADMIN_NAME, 
+  SUPER_ADMIN_TITLE, 
+  TEACHER_EMAILS, 
+  TEACHER_PROFILES, 
+  TEACHER_PIN, 
+  VALID_TEACHER_PINS,
+  isSuperAdmin as checkIsSuperAdmin 
+} from '../config/schoolConfig';
+import { checkStudentAccessAllowed } from '../services/adminService';
 import { logLoginSession } from '../services/analyticsService';
 
 const AuthContext = createContext(null);
@@ -21,9 +35,14 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [completedLessons, setCompletedLessons] = useState([]);
-  const [userRole, setUserRole] = useState('student'); // 'student' | 'teacher'
-  const [userClass, setUserClass] = useState(null); // '10A1', '10A2',...
+  const [userRole, setUserRole] = useState('student'); // 'student' | 'teacher' | 'admin'
+  const [userClass, setUserClass] = useState(null); // '10A1', '10A4',...
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [assignedClasses, setAssignedClasses] = useState(['all']);
   const [needsClassSelection, setNeedsClassSelection] = useState(false);
+  const [isAccessBlocked, setIsAccessBlocked] = useState(false);
+  const [blockedEmail, setBlockedEmail] = useState('');
+  const [autoOpenAdmin, setAutoOpenAdmin] = useState(false);
 
   // Lắng nghe trạng thái đăng nhập Firebase hoặc SessionStorage
   useEffect(() => {
@@ -40,6 +59,8 @@ export function AuthProvider({ children }) {
         photoURL: null
       });
       setUserRole('student');
+      setIsAdmin(false);
+      setIsAccessBlocked(false);
       setUserClass(sessionStorage.getItem('codemind_passcode_class') || '10A1');
       setLoading(false);
       return;
@@ -52,10 +73,92 @@ export function AuthProvider({ children }) {
           sessionStorage.setItem('codemind_auth', 'true');
           sessionStorage.setItem('codemind_auth_type', 'google');
 
-          // Phân quyền Giáo viên tự động qua Danh sách Email Whitelist
-          const isEmailTeacher = TEACHER_EMAILS.includes((user.email || '').toLowerCase().trim());
-          let initialRole = isEmailTeacher ? 'teacher' : 'student';
-          let savedClass = null;
+          const normEmail = (user.email || '').toLowerCase().trim();
+          const isSuper = checkIsSuperAdmin(normEmail);
+
+          // Kiểm tra xem có phải giáo viên (trong TEACHER_EMAILS hoặc database)
+          let isEmailTeacher = TEACHER_EMAILS.includes(normEmail);
+          let teacherAssigned = isSuper ? ['all'] : (TEACHER_PROFILES[normEmail]?.assignedClasses || ['all']);
+
+          // Kiểm tra thêm trong collection teachers trên Firestore nếu chưa có trong danh sách tĩnh
+          if (!isSuper && !isEmailTeacher && db) {
+            try {
+              const teacherDocId = normEmail.replace(/\./g, '_dot_').replace(/@/g, '_at_');
+              const tDoc = await getDoc(doc(db, 'teachers', teacherDocId));
+              if (tDoc.exists()) {
+                isEmailTeacher = true;
+                teacherAssigned = tDoc.data().assignedClasses || ['all'];
+              }
+            } catch (e) {
+              console.warn('Lỗi đọc teacher doc:', e);
+            }
+          }
+
+          let resolvedRole = 'student';
+          let resolvedClass = null;
+
+          if (isSuper) {
+            // ==========================================
+            // VAI TRÒ: QUẢN TRỊ VIÊN HỆ THỐNG TỐI CAO (CÔ TRẦN THỊ NGÀ)
+            // ==========================================
+            resolvedRole = 'admin';
+            resolvedClass = 'Toàn trường (10 lớp)';
+            setIsAdmin(true);
+            setUserRole('admin');
+            setUserClass(resolvedClass);
+            setAssignedClasses(['all']);
+            setIsAccessBlocked(false);
+            setBlockedEmail('');
+            setAutoOpenAdmin(true); // Tự động mở Trang Quản Trị Hệ Thống ngay sau khi đăng nhập
+            setNeedsClassSelection(false);
+
+          } else if (isEmailTeacher) {
+            // ==========================================
+            // VAI TRÒ: GIÁO VIÊN BỘ MÔN
+            // ==========================================
+            resolvedRole = 'teacher';
+            resolvedClass = 'Ban Giảng Dạy';
+            setIsAdmin(false);
+            setUserRole('teacher');
+            setUserClass('Ban Giảng Dạy');
+            setAssignedClasses(teacherAssigned);
+            setIsAccessBlocked(false);
+            setBlockedEmail('');
+            setAutoOpenAdmin(false);
+            setNeedsClassSelection(false);
+
+          } else {
+            // ==========================================
+            // VAI TRÒ: HỌC SINH (ÁP DỤNG CỔNG BẢO MẬT WHITELIST)
+            // ==========================================
+            setIsAdmin(false);
+            setAutoOpenAdmin(false);
+
+            // Kiểm tra xem học sinh đã được giáo viên nhập vào hệ thống trước đó hay chưa!
+            const accessCheck = await checkStudentAccessAllowed(normEmail);
+
+            if (!accessCheck.isAllowed) {
+              // HỌC SINH CHƯA ĐƯỢC NHẬP VÀO HỆ THỐNG:
+              // Khóa quyền vào học và hiển thị Popup hướng dẫn liên hệ Admin
+              setIsAccessBlocked(true);
+              setBlockedEmail(normEmail);
+              setUserRole('student');
+              setUserClass(null);
+              setNeedsClassSelection(false);
+              setCurrentUser(user);
+              setLoading(false);
+              return; // Dừng tại đây, không cho vào không gian học tập
+            }
+
+            // HỌC SINH ĐÃ ĐƯỢC NHẬP VÀO HỆ THỐNG:
+            setIsAccessBlocked(false);
+            setBlockedEmail('');
+            resolvedRole = 'student';
+            resolvedClass = accessCheck.className || '10A1';
+            setUserRole('student');
+            setUserClass(resolvedClass);
+            setNeedsClassSelection(false); // Không cần chọn lớp vì giáo viên đã chỉ định lớp chính xác!
+          }
 
           // Đọc và đồng bộ profile từ Cloud Firestore
           if (db) {
@@ -63,35 +166,35 @@ export function AuthProvider({ children }) {
               const userRef = doc(db, 'users', user.uid);
               const docSnap = await getDoc(userRef);
 
-              if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (data.role === 'teacher') initialRole = 'teacher';
-                if (data.className) savedClass = data.className;
-                if (data.completedLessons) setCompletedLessons(data.completedLessons);
+              if (docSnap.exists() && docSnap.data().completedLessons) {
+                setCompletedLessons(docSnap.data().completedLessons);
               }
 
-              // Nếu là giáo viên, role luôn là 'teacher' và className luôn là 'Ban Giảng Dạy'
-              const finalRole = (isEmailTeacher || initialRole === 'teacher') ? 'teacher' : 'student';
-              const finalClass = finalRole === 'teacher' ? 'Ban Giảng Dạy' : (savedClass || null);
+              const finalDisplayName = isSuper 
+                ? 'Trần Thị Ngà — Quản trị hệ thống' 
+                : (isEmailTeacher 
+                    ? (TEACHER_PROFILES[normEmail]?.name || 'Giáo viên Tin học') 
+                    : (user.displayName || 'Học sinh THPT'));
 
               // Cập nhật Profile và thời điểm đăng nhập
               await setDoc(userRef, {
                 uid: user.uid,
                 email: user.email,
-                displayName: user.displayName || (finalRole === 'teacher' ? 'Giáo viên THPT' : 'Học sinh THPT'),
+                displayName: finalDisplayName,
                 photoURL: user.photoURL,
-                role: finalRole,
-                className: finalClass,
+                role: resolvedRole,
+                className: resolvedClass,
+                assignedClasses: (isSuper || isEmailTeacher) ? teacherAssigned : null,
                 lastLogin: serverTimestamp(),
                 lastActive: serverTimestamp()
               }, { merge: true });
 
               // Chỉ ghi nhận nhật ký phiên đăng nhập (Session Tracking NCKH) đối với HỌC SINH
-              if (finalRole !== 'teacher') {
+              if (resolvedRole === 'student') {
                 logLoginSession(user.uid, {
-                  displayName: user.displayName,
+                  displayName: finalDisplayName,
                   email: user.email,
-                  className: finalClass
+                  className: resolvedClass
                 });
               }
 
@@ -100,25 +203,16 @@ export function AuthProvider({ children }) {
             }
           }
 
-          const resolvedRole = (isEmailTeacher || initialRole === 'teacher') ? 'teacher' : 'student';
-          const resolvedClass = resolvedRole === 'teacher' ? 'Ban Giảng Dạy' : savedClass;
-
           setCurrentUser(user);
-          setUserRole(resolvedRole);
-          setUserClass(resolvedClass);
-
-          // Nếu là học sinh và chưa có lớp -> Bật cửa sổ chọn lớp Onboarding 1 lần đầu
-          if (resolvedRole === 'student' && !resolvedClass) {
-            setNeedsClassSelection(true);
-          } else {
-            setNeedsClassSelection(false);
-          }
-
         } else {
           if (!isPasscodeAuth) {
             setCurrentUser(null);
             setUserRole('student');
             setUserClass(null);
+            setIsAdmin(false);
+            setIsAccessBlocked(false);
+            setBlockedEmail('');
+            setAutoOpenAdmin(false);
           }
         }
         setLoading(false);
@@ -218,8 +312,30 @@ export function AuthProvider({ children }) {
       setCurrentUser(null);
       setUserRole('student');
       setUserClass(null);
+      setIsAdmin(false);
+      setIsAccessBlocked(false);
+      setBlockedEmail('');
+      setAssignedClasses(['all']);
+      setAutoOpenAdmin(false);
       setCompletedLessons([]);
       setNeedsClassSelection(false);
+    }
+  };
+
+  // Kiểm tra lại quyền truy cập cho học sinh sau khi liên hệ Admin
+  const recheckAccess = async () => {
+    if (!currentUser || !currentUser.email) return;
+    const normEmail = (currentUser.email || '').toLowerCase().trim();
+    const accessCheck = await checkStudentAccessAllowed(normEmail);
+    if (accessCheck.isAllowed) {
+      setIsAccessBlocked(false);
+      setBlockedEmail('');
+      const studentClass = accessCheck.className || '10A1';
+      setUserClass(studentClass);
+      setUserRole('student');
+      alert(`Xin chúc mừng! Tài khoản của em đã được kích hoạt vào Lớp ${studentClass}. Bắt đầu học ngay nhé!`);
+    } else {
+      alert('Tài khoản của em vẫn chưa có trong danh sách được cấp quyền. Vui lòng liên hệ Admin qua số: 0975 702 636.');
     }
   };
 
@@ -280,7 +396,15 @@ export function AuthProvider({ children }) {
     currentUser,
     userRole,
     userClass,
-    isTeacher: userRole === 'teacher',
+    isTeacher: userRole === 'teacher' || userRole === 'admin',
+    isAdmin,
+    isSuperAdmin: isAdmin,
+    assignedClasses,
+    isAccessBlocked,
+    blockedEmail,
+    autoOpenAdmin,
+    setAutoOpenAdmin,
+    recheckAccess,
     needsClassSelection,
     loading,
     completedLessons,

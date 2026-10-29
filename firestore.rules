@@ -2,29 +2,52 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Kiểm tra tài khoản Giáo viên dựa trên email đăng nhập Google
+    // Kiểm tra tài khoản Quản trị viên tối cao (Super Admin)
+    function isSuperAdmin() {
+      return request.auth != null && 
+        request.auth.token.email == 'tranthingalg1@gmail.com';
+    }
+
+    // Kiểm tra tài khoản Giáo viên dựa trên email đăng nhập Google hoặc phân quyền role == 'teacher'
     function isTeacher() {
       return request.auth != null && 
         (request.auth.token.email == 'smilers.thp@gmail.com' || 
          request.auth.token.email == 'tranthingalg1@gmail.com' || 
-         request.auth.token.email == 'nguyentrunghoa@gmail.com');
+         request.auth.token.email == 'nguyentrunghoa@gmail.com' ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['teacher', 'admin']));
     }
 
-    // Kiểm tra học sinh chính chủ sở hữu tài liệu
+    // Kiểm tra người dùng chính chủ sở hữu tài liệu
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
 
+    // Danh sách học sinh đã được nhập vào hệ thống (Whitelist Students)
+    match /registered_students/{studentId} {
+      // Học sinh đăng nhập được phép đọc để kiểm tra trạng thái kích hoạt của bản thân
+      allow read: if request.auth != null;
+      // Chỉ Super Admin hoặc Giáo viên mới có quyền nhập, sửa lớp, xóa học sinh
+      allow write: if isSuperAdmin() || isTeacher();
+    }
+
+    // Danh sách Giáo viên và phân quyền quản lý lớp (Teachers Registry)
+    match /teachers/{teacherId} {
+      allow read: if request.auth != null;
+      // Chỉ Super Admin Trần Thị Ngà mới có quyền thêm, đổi lớp, xóa giáo viên
+      allow write: if isSuperAdmin();
+    }
+
     // Quản lý hồ sơ người dùng (học sinh & giáo viên)
     match /users/{userId} {
-      // Giáo viên có quyền ĐỌC dữ liệu tất cả học sinh để hiển thị Teacher Dashboard
-      // Học sinh có toàn quyền ĐỌC & GHI thông tin tài khoản của chính mình
-      allow read: if isOwner(userId) || isTeacher();
-      allow write: if isOwner(userId);
+      // Giáo viên có quyền ĐỌC dữ liệu học sinh để hiển thị Teacher Dashboard
+      allow read: if isOwner(userId) || isTeacher() || isSuperAdmin();
+      // Học sinh cập nhật tài khoản của mình, Super Admin có quyền cập nhật phân quyền
+      allow write: if isOwner(userId) || isSuperAdmin();
 
       // Tất cả các sub-collections: codeSnippets, debugLogs, socraticChats, sessions
       match /{allSubcollections=**} {
-        allow read: if isOwner(userId) || isTeacher();
+        allow read: if isOwner(userId) || isTeacher() || isSuperAdmin();
         allow write: if isOwner(userId);
       }
     }
@@ -35,4 +58,3 @@ service cloud.firestore {
     }
   }
 }
-
