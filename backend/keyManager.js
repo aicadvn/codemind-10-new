@@ -26,8 +26,8 @@ class GeminiKeyManager {
       });
     }
 
-    // 2. Đọc từ các biến đánh số riêng biệt GEMINI_API_KEY_1 đến GEMINI_API_KEY_10
-    for (let i = 1; i <= 10; i++) {
+    // 2. Đọc từ các biến đánh số riêng biệt GEMINI_API_KEY_1 đến GEMINI_API_KEY_50
+    for (let i = 1; i <= 50; i++) {
       const k = process.env[`GEMINI_API_KEY_${i}`];
       if (k && k.trim()) {
         rawKeys.push(k.trim());
