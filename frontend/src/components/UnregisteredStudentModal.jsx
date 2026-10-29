@@ -64,7 +64,7 @@ export default function UnregisteredStudentModal({
         <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-4 mb-5 text-left text-xs leading-relaxed text-gray-700">
           <p className="font-semibold text-amber-950 mb-2 flex items-center gap-1.5">
             <AlertCircle size={15} className="text-amber-600 shrink-0" />
-            Em chưa được giáo viên nhập vào danh sách thực nghiệm:
+            Em chưa được giáo viên nhập vào hệ thống:
           </p>
           <p className="text-gray-600 mb-3 text-[11px]">
             Theo quy định, chỉ các học sinh đã được giáo viên quản lý lớp nhập email và phân lớp chính thức mới được phép truy cập không gian học tập.
