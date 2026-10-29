@@ -8,6 +8,7 @@ import {
   Trash2, 
   Edit3, 
   CheckCircle2, 
+  Check,
   AlertCircle, 
   Search, 
   Filter, 
@@ -81,10 +82,92 @@ export default function AdminPortal({
 
   // Teacher Management States
   const [isAddTeacherModalOpen, setIsAddTeacherModalOpen] = useState(false);
-  const [newTeacher, setNewTeacher] = useState({ name: '', email: '', assignedClass: '10A1' });
+  const [newTeacher, setNewTeacher] = useState({ name: '', email: '', assignedClasses: ['all'] });
   const [editingTeacher, setEditingTeacher] = useState(null);
-  const [newClassForTeacher, setNewClassForTeacher] = useState('10A1');
+  const [newClassesForTeacher, setNewClassesForTeacher] = useState(['all']);
   const [teacherActionError, setTeacherActionError] = useState('');
+
+  // Helpers tính toán phân nhiều lớp cho modal Phân công lại lớp
+  const isAllSelected = (newClassesForTeacher || []).includes('all') || (newClassesForTeacher || []).length === SCHOOL_CLASSES.length;
+
+  const selectedClassesList = isAllSelected 
+    ? SCHOOL_CLASSES 
+    : SCHOOL_CLASSES.filter(cls => (newClassesForTeacher || []).includes(cls));
+
+  const selectedClassCount = selectedClassesList.length;
+
+  const isClassSelected = (cls) => {
+    if ((newClassesForTeacher || []).includes('all')) return true;
+    return (newClassesForTeacher || []).includes(cls);
+  };
+
+  const toggleTeacherClass = (cls) => {
+    if (cls === 'all') {
+      if (isAllSelected) {
+        setNewClassesForTeacher([]);
+      } else {
+        setNewClassesForTeacher(['all']);
+      }
+      return;
+    }
+
+    let current = isAllSelected ? [...SCHOOL_CLASSES] : [...(newClassesForTeacher || [])];
+    if (current.includes(cls)) {
+      current = current.filter(c => c !== cls);
+    } else {
+      current.push(cls);
+    }
+
+    if (current.length === SCHOOL_CLASSES.length) {
+      setNewClassesForTeacher(['all']);
+    } else {
+      setNewClassesForTeacher(current);
+    }
+  };
+
+  const handleSelectAllClasses = () => {
+    setNewClassesForTeacher(['all']);
+  };
+
+  const handleDeselectAllClasses = () => {
+    setNewClassesForTeacher([]);
+  };
+
+  // Helpers cho modal Thêm giáo viên mới
+  const isNewTeacherAllSelected = (newTeacher.assignedClasses || []).includes('all') || (newTeacher.assignedClasses || []).length === SCHOOL_CLASSES.length;
+
+  const newTeacherSelectedList = isNewTeacherAllSelected
+    ? SCHOOL_CLASSES
+    : SCHOOL_CLASSES.filter(cls => (newTeacher.assignedClasses || []).includes(cls));
+
+  const isNewTeacherClassSelected = (cls) => {
+    if ((newTeacher.assignedClasses || []).includes('all')) return true;
+    return (newTeacher.assignedClasses || []).includes(cls);
+  };
+
+  const toggleNewTeacherClass = (cls) => {
+    if (cls === 'all') {
+      if (isNewTeacherAllSelected) {
+        setNewTeacher(prev => ({ ...prev, assignedClasses: [] }));
+      } else {
+        setNewTeacher(prev => ({ ...prev, assignedClasses: ['all'] }));
+      }
+      return;
+    }
+
+    let current = isNewTeacherAllSelected ? [...SCHOOL_CLASSES] : [...(newTeacher.assignedClasses || [])];
+    if (current.includes(cls)) {
+      current = current.filter(c => c !== cls);
+    } else {
+      current.push(cls);
+    }
+
+    if (current.length === SCHOOL_CLASSES.length) {
+      setNewTeacher(prev => ({ ...prev, assignedClasses: ['all'] }));
+    } else {
+      setNewTeacher(prev => ({ ...prev, assignedClasses: current }));
+    }
+  };
 
   // Tải dữ liệu ban đầu
   const loadAllData = async (silent = false) => {
@@ -237,17 +320,24 @@ export default function AdminPortal({
       return;
     }
 
+    if (newTeacherSelectedList.length === 0) {
+      setTeacherActionError('Vui lòng chọn ít nhất 1 lớp phụ trách cho giáo viên');
+      return;
+    }
+
+    const assigned = isNewTeacherAllSelected ? ['all'] : newTeacherSelectedList;
+
     try {
       await saveTeacherAccount({
         email: newTeacher.email,
         name: newTeacher.name || 'Giáo viên Tin học',
-        assignedClasses: newTeacher.assignedClass === 'all' ? ['all'] : [newTeacher.assignedClass],
+        assignedClasses: assigned,
         role: 'teacher'
       }, SUPER_ADMIN_EMAIL);
 
-      await loadAllData();
+      await loadAllData(true);
       setIsAddTeacherModalOpen(false);
-      setNewTeacher({ name: '', email: '', assignedClass: '10A1' });
+      setNewTeacher({ name: '', email: '', assignedClasses: ['all'] });
       alert('Đã thêm giáo viên và phân quyền lớp thành công!');
     } catch (err) {
       setTeacherActionError(err.message);
@@ -257,12 +347,17 @@ export default function AdminPortal({
   // Cập nhật lớp cho giáo viên
   const handleSaveTeacherClassChange = async () => {
     if (!editingTeacher) return;
+    if (selectedClassCount === 0) {
+      alert('Vui lòng chọn ít nhất 1 lớp phụ trách cho giáo viên!');
+      return;
+    }
+
     try {
-      const assigned = newClassForTeacher === 'all' ? ['all'] : [newClassForTeacher];
+      const assigned = isAllSelected ? ['all'] : selectedClassesList;
       await updateTeacherAssignedClasses(editingTeacher.email, assigned);
-      await loadAllData();
+      await loadAllData(true);
       setEditingTeacher(null);
-      alert(`Đã cập nhật quyền quản lý lớp cho giáo viên ${editingTeacher.name || editingTeacher.email}!`);
+      alert(`Đã cập nhật quyền quản lý ${isAllSelected ? 'Toàn bộ 10 lớp' : `${selectedClassCount} lớp`} cho giáo viên ${editingTeacher.name || editingTeacher.email}!`);
     } catch (err) {
       alert(`Lỗi cập nhật: ${err.message}`);
     }
@@ -713,7 +808,14 @@ export default function AdminPortal({
                                 <button
                                   onClick={() => {
                                     setEditingTeacher(t);
-                                    setNewClassForTeacher((t.assignedClasses || [])[0] || '10A1');
+                                    const currentAssigned = Array.isArray(t.assignedClasses) && t.assignedClasses.length > 0
+                                      ? t.assignedClasses
+                                      : ['all'];
+                                    if (currentAssigned.includes('all')) {
+                                      setNewClassesForTeacher(['all']);
+                                    } else {
+                                      setNewClassesForTeacher([...currentAssigned]);
+                                    }
                                   }}
                                   className="p-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-lg transition-colors cursor-pointer"
                                   title="Điều chỉnh lớp phụ trách cho giáo viên"
@@ -1098,22 +1200,94 @@ export default function AdminPortal({
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Giao quyền quản lý lớp:
-                </label>
-                <select
-                  value={newTeacher.assignedClass}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, assignedClass: e.target.value })}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500"
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-bold text-slate-700 text-xs">
+                    Giao quyền quản lý lớp:
+                  </label>
+                  <div className="flex gap-1.5 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setNewTeacher(prev => ({ ...prev, assignedClasses: ['all'] }))}
+                      className="text-indigo-600 hover:text-indigo-700 font-bold hover:underline cursor-pointer"
+                    >
+                      Chọn 10 lớp
+                    </button>
+                    <span className="text-slate-300">•</span>
+                    <button
+                      type="button"
+                      onClick={() => setNewTeacher(prev => ({ ...prev, assignedClasses: [] }))}
+                      className="text-slate-500 hover:text-rose-600 font-bold hover:underline cursor-pointer"
+                    >
+                      Bỏ chọn
+                    </button>
+                  </div>
+                </div>
+
+                {/* Nút nhanh: Toàn bộ 10 lớp */}
+                <button
+                  type="button"
+                  onClick={() => toggleNewTeacherClass('all')}
+                  className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-all cursor-pointer mb-2 ${
+                    isNewTeacherAllSelected
+                      ? 'bg-indigo-50/80 border-indigo-400 text-indigo-950 font-black ring-1 ring-indigo-400'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 font-bold'
+                  }`}
                 >
-                  <option value="all">Quản lý Toàn bộ 10 lớp</option>
-                  {SCHOOL_CLASSES.map(cls => (
-                    <option key={cls} value={cls}>Quản lý riêng Lớp {cls}</option>
-                  ))}
-                </select>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  * Giáo viên chỉ được xem danh sách và nhật ký học sinh của lớp được giao.
-                </p>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${
+                      isNewTeacherAllSelected 
+                        ? 'bg-indigo-600 border-indigo-600 text-white' 
+                        : 'border-slate-300 bg-white'
+                    }`}>
+                      {isNewTeacherAllSelected && <Check size={12} className="stroke-[3]" />}
+                    </div>
+                    <span className="text-xs">Quản lý Toàn bộ 10 lớp khối 10</span>
+                  </div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                    isNewTeacherAllSelected ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    10 Lớp
+                  </span>
+                </button>
+
+                {/* Grid 10 lớp */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1.5 bg-slate-50 rounded-2xl border border-slate-200">
+                  {SCHOOL_CLASSES.map(cls => {
+                    const selected = isNewTeacherClassSelected(cls);
+                    return (
+                      <button
+                        key={cls}
+                        type="button"
+                        onClick={() => toggleNewTeacherClass(cls)}
+                        className={`p-2 rounded-xl border text-xs font-bold flex items-center justify-between gap-1 transition-all cursor-pointer ${
+                          selected
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span>{cls}</span>
+                        <div className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 ${
+                          selected ? 'bg-white/20 text-white' : 'border border-slate-300 bg-slate-50'
+                        }`}>
+                          {selected && <Check size={10} className="stroke-[3]" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
+                  <CheckCircle2 size={13} className={newTeacherSelectedList.length > 0 ? 'text-emerald-600 shrink-0' : 'text-slate-400 shrink-0'} />
+                  <span>
+                    Đang chọn: {isNewTeacherAllSelected ? (
+                      <strong className="text-indigo-600 font-bold">Toàn bộ 10 lớp</strong>
+                    ) : newTeacherSelectedList.length > 0 ? (
+                      <strong className="text-indigo-600 font-bold">{newTeacherSelectedList.join(', ')} ({newTeacherSelectedList.length} lớp)</strong>
+                    ) : (
+                      <span className="text-rose-500 font-bold italic">Chưa chọn lớp nào</span>
+                    )}
+                  </span>
+                </div>
               </div>
 
               {teacherActionError && (
@@ -1147,45 +1321,161 @@ export default function AdminPortal({
       {/* ======================================================== */}
       {editingTeacher && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-sm w-full border border-slate-100 animate-scale-up text-xs">
-            <h3 className="font-black text-slate-900 text-sm mb-1">
-              Phân Công Lại Lớp Quản Lý
-            </h3>
-            <p className="text-slate-500 mb-3">
-              Giáo viên: <strong className="text-slate-900">{editingTeacher.name || editingTeacher.email}</strong>
-            </p>
-
-            <div className="space-y-3">
+          <div className="bg-white rounded-3xl shadow-2xl p-6 max-w-md w-full border border-slate-100 animate-scale-up text-xs">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-3 border-b border-slate-100 pb-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Chọn lớp giao phụ trách:
+                <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
+                  <Layers className="text-indigo-600" size={18} />
+                  Phân Công Lớp Quản Lý
+                </h3>
+                <p className="text-slate-500 text-xs mt-1">
+                  Giáo viên: <strong className="text-indigo-950 font-bold text-sm">{editingTeacher.name || editingTeacher.email}</strong>
+                </p>
+                <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                  {editingTeacher.email}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingTeacher(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-3.5">
+              {/* Nút nhanh: Toàn bộ 10 lớp */}
+              <div>
+                <label className="block font-bold text-slate-700 text-xs mb-1.5">
+                  Chế độ phân công:
                 </label>
-                <select
-                  value={newClassForTeacher}
-                  onChange={(e) => setNewClassForTeacher(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500"
+                <button
+                  type="button"
+                  onClick={() => toggleTeacherClass('all')}
+                  className={`w-full p-2.5 rounded-2xl border text-left flex items-center justify-between transition-all cursor-pointer ${
+                    isAllSelected
+                      ? 'bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 border-indigo-400 text-indigo-950 font-black shadow-sm ring-2 ring-indigo-400/40'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 font-bold'
+                  }`}
                 >
-                  <option value="all">Quản lý Toàn bộ 10 lớp</option>
-                  {SCHOOL_CLASSES.map(cls => (
-                    <option key={cls} value={cls}>Quản lý riêng Lớp {cls}</option>
-                  ))}
-                </select>
+                  <div className="flex items-center gap-2.5">
+                    <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-all ${
+                      isAllSelected 
+                        ? 'bg-indigo-600 border-indigo-600 text-white' 
+                        : 'border-slate-300 bg-white'
+                    }`}>
+                      {isAllSelected && <Check size={14} className="stroke-[3]" />}
+                    </div>
+                    <div>
+                      <span className="text-xs">Quản lý Toàn bộ 10 lớp khối 10</span>
+                      <p className="text-[10px] text-slate-500 font-normal">
+                        Theo dõi toàn diện tất cả các lớp từ 10A1 đến 10D4
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                    isAllSelected ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    10 Lớp
+                  </span>
+                </button>
               </div>
 
-              <div className="flex gap-2 pt-2">
+              {/* Phân công nhiều lớp cụ thể */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="font-bold text-slate-700 text-xs flex items-center gap-1.5">
+                    <span>Hoặc chọn nhiều lớp phụ trách:</span>
+                    <span className="text-[11px] font-normal text-slate-500">
+                      ({selectedClassCount} / {SCHOOL_CLASSES.length} lớp)
+                    </span>
+                  </label>
+                  <div className="flex gap-1.5 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={handleSelectAllClasses}
+                      className="text-indigo-600 hover:text-indigo-700 font-bold hover:underline cursor-pointer"
+                    >
+                      Chọn tất cả
+                    </button>
+                    <span className="text-slate-300">•</span>
+                    <button
+                      type="button"
+                      onClick={handleDeselectAllClasses}
+                      className="text-slate-500 hover:text-rose-600 font-bold hover:underline cursor-pointer"
+                    >
+                      Bỏ chọn
+                    </button>
+                  </div>
+                </div>
+
+                {/* Grid 10 lớp */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-2 bg-slate-50 rounded-2xl border border-slate-200">
+                  {SCHOOL_CLASSES.map(cls => {
+                    const selected = isClassSelected(cls);
+                    return (
+                      <button
+                        key={cls}
+                        type="button"
+                        onClick={() => toggleTeacherClass(cls)}
+                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between gap-1 transition-all cursor-pointer ${
+                          selected
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm shadow-indigo-200 scale-[1.02]'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span>{cls}</span>
+                        <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 ${
+                          selected ? 'bg-white/20 text-white' : 'border border-slate-300 bg-slate-50'
+                        }`}>
+                          {selected && <Check size={12} className="stroke-[3]" />}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Tóm tắt danh sách lớp được giao */}
+              <div className="p-3 rounded-2xl bg-slate-100/80 border border-slate-200 text-slate-700 text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                  <CheckCircle2 size={14} className={selectedClassCount > 0 ? 'text-emerald-600' : 'text-slate-400'} />
+                  <span>Kết quả phân công sẽ lưu:</span>
+                </div>
+                <p className="text-[11px] text-slate-600 mt-1">
+                  {isAllSelected ? (
+                    <strong className="text-indigo-600 font-bold">Toàn bộ 10 lớp khối 10 (10A1, 10A4, 10A5, 10A6, 10A7, 10A8, 10D1, 10D2, 10D3, 10D4)</strong>
+                  ) : selectedClassCount > 0 ? (
+                    <span>Phụ trách <strong className="text-indigo-600 font-bold">{selectedClassCount} lớp</strong>: <strong className="text-slate-800 font-bold">{selectedClassesList.join(', ')}</strong></span>
+                  ) : (
+                    <span className="text-rose-500 font-bold italic">Chưa chọn lớp nào. Vui lòng chọn ít nhất 1 lớp!</span>
+                  )}
+                </p>
+              </div>
+
+              {/* Nút hành động */}
+              <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setEditingTeacher(null)}
-                  className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold cursor-pointer"
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs cursor-pointer transition-colors"
                 >
                   Hủy
                 </button>
                 <button
                   type="button"
+                  disabled={selectedClassCount === 0}
                   onClick={handleSaveTeacherClassChange}
-                  className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold cursor-pointer"
+                  className={`flex-1 py-2.5 text-white rounded-xl font-bold text-xs cursor-pointer transition-all shadow-md flex items-center justify-center gap-1.5 ${
+                    selectedClassCount === 0
+                      ? 'bg-slate-300 cursor-not-allowed shadow-none'
+                      : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-200 hover:shadow-lg'
+                  }`}
                 >
-                  Xác nhận lưu
+                  <Check size={14} />
+                  Xác nhận lưu ({isAllSelected ? 'Toàn bộ 10 lớp' : `${selectedClassCount} lớp`})
                 </button>
               </div>
             </div>
