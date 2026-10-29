@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Book, 
   ChevronRight, 
@@ -307,8 +308,8 @@ export default function Sidebar({
       </div>
 
       {/* Modal Nhập Mã PIN Giáo viên */}
-      {isPinModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+      {isPinModalOpen && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl border border-gray-200 text-center animate-scale-up">
             <ShieldCheck size={36} className="text-primary-600 mx-auto mb-2" />
             <h3 className="font-bold text-gray-800 text-base mb-1">Kích hoạt quyền giáo viên</h3>
@@ -320,6 +321,7 @@ export default function Sidebar({
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
                 placeholder="Nhập mã PIN giáo viên..."
+                autoFocus
                 className="w-full p-2.5 border border-gray-300 rounded-xl text-center font-mono text-sm tracking-widest focus:ring-2 focus:ring-primary-500 outline-none"
               />
 
@@ -331,20 +333,21 @@ export default function Sidebar({
                 <button
                   type="button"
                   onClick={() => setIsPinModalOpen(false)}
-                  className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-medium"
+                  className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-medium cursor-pointer"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-xs font-bold"
+                  className="flex-1 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-xs font-bold cursor-pointer"
                 >
                   Xác nhận
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
