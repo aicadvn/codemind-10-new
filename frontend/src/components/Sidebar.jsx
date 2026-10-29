@@ -1,4 +1,17 @@
-import { Book, ChevronRight, PlayCircle, LogOut, CheckCircle2, Circle, User } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  Book, 
+  ChevronRight, 
+  PlayCircle, 
+  LogOut, 
+  CheckCircle2, 
+  Circle, 
+  User, 
+  ShieldCheck, 
+  BarChart3, 
+  Award,
+  KeyRound
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const LESSONS = [
@@ -31,9 +44,28 @@ const TOPIC_SUMMARIES = {
   "Thực hành": "Ôn tập và vận dụng tổng hợp để viết ứng dụng thực tế."
 };
 
-export default function Sidebar({ activeLesson, onSelectLesson, onOpenInstruction }) {
-  const { currentUser, logout, completedLessons, toggleCompleteLesson } = useAuth();
-  
+export default function Sidebar({ 
+  activeLesson, 
+  onSelectLesson, 
+  onOpenInstruction, 
+  onOpenDiary, 
+  onOpenDashboard 
+}) {
+  const { 
+    currentUser, 
+    userRole, 
+    userClass, 
+    isTeacher, 
+    logout, 
+    completedLessons, 
+    toggleCompleteLesson,
+    activateTeacherModeWithPIN 
+  } = useAuth();
+
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+
   // Group lessons by generic topic
   const groupedLessons = LESSONS.reduce((acc, lesson) => {
     if (!acc[lesson.topic]) acc[lesson.topic] = [];
@@ -53,8 +85,21 @@ export default function Sidebar({ activeLesson, onSelectLesson, onOpenInstructio
   };
 
   const handleLogout = () => {
-    if (window.confirm('Bạn có chắc muốn đăng xuất khỏi phiên học? Hãy đảm bảo đã lưu bài trước khi rời máy tính phòng học!')) {
+    if (window.confirm('Bạn có chắc muốn đăng xuất? Hãy đảm bảo đã lưu bài trước khi rời máy tính!')) {
       logout();
+    }
+  };
+
+  const handleVerifyPin = async (e) => {
+    e.preventDefault();
+    setPinError('');
+    const ok = await activateTeacherModeWithPIN(pinInput);
+    if (ok) {
+      setIsPinModalOpen(false);
+      setPinInput('');
+      alert('Đã kích hoạt Chế độ Giáo viên thành công!');
+    } else {
+      setPinError('Mã PIN không đúng. Vui lòng kiểm tra lại!');
     }
   };
 
@@ -71,47 +116,81 @@ export default function Sidebar({ activeLesson, onSelectLesson, onOpenInstructio
         </p>
       </div>
 
-      {/* Thẻ thông tin học sinh & Nút Đăng xuất an toàn (dành cho phòng máy dùng chung) */}
+      {/* Thẻ thông tin học sinh / Giáo viên */}
       {currentUser && (
-        <div className="px-4 py-2.5 bg-gray-50/80 border-b border-gray-200 flex items-center justify-between gap-2">
+        <div className="px-4 py-3 bg-gray-50/80 border-b border-gray-200 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 overflow-hidden">
             {currentUser.photoURL ? (
               <img 
                 src={currentUser.photoURL} 
                 alt="Avatar" 
-                className="w-8 h-8 rounded-full border border-primary-200 object-cover shrink-0" 
+                className="w-9 h-9 rounded-full border border-primary-200 object-cover shrink-0 shadow-sm" 
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-xs shrink-0">
-                <User size={16} />
+              <div className="w-9 h-9 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                <User size={18} />
               </div>
             )}
             <div className="overflow-hidden">
-              <span className="block text-xs font-bold text-gray-800 truncate leading-tight">
-                {currentUser.displayName || 'Học sinh'}
-              </span>
-              <span className="block text-[10px] text-gray-400 truncate leading-tight">
-                {currentUser.email || 'Phiên học phòng máy'}
+              <div className="flex items-center gap-1.5">
+                <span className="block text-xs font-black text-gray-800 truncate leading-tight">
+                  {currentUser.displayName || 'Người dùng'}
+                </span>
+                {isTeacher ? (
+                  <span className="bg-yellow-100 text-yellow-800 font-extrabold text-[9px] px-1.5 py-0.2 rounded border border-yellow-300 shrink-0">
+                    GV
+                  </span>
+                ) : (
+                  <span className="bg-primary-100 text-primary-800 font-extrabold text-[9px] px-1.5 py-0.2 rounded border border-primary-200 shrink-0">
+                    {userClass || '10A1'}
+                  </span>
+                )}
+              </div>
+              <span className="block text-[10px] text-gray-400 truncate leading-tight mt-0.5">
+                {currentUser.email || 'Phiên làm việc'}
               </span>
             </div>
           </div>
 
-          <button
-            onClick={handleLogout}
-            title="Đăng xuất khỏi máy tính"
-            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-          >
-            <LogOut size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleLogout}
+              title="Đăng xuất an toàn"
+              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
         </div>
       )}
+
+      {/* Nút Chức năng Đặc biệt: Dashboard (Giáo viên) HOẶC Sổ tay Săn Bug (Học sinh) */}
+      <div className="p-3 bg-white border-b border-gray-100 space-y-2">
+        {isTeacher ? (
+          <button
+            onClick={onOpenDashboard}
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow text-xs"
+          >
+            <BarChart3 size={15} />
+            Bảng Điều Khiển Sư Phạm (9 Lớp)
+          </button>
+        ) : (
+          <button
+            onClick={onOpenDiary}
+            className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all border border-emerald-200 text-xs"
+          >
+            <Award size={15} className="text-emerald-600" />
+            Sổ tay Săn Bug & Nhật ký của em
+          </button>
+        )}
+      </div>
       
       {/* Danh sách lộ trình 17 bài học */}
-      <div className="flex-1 overflow-y-auto px-4 py-5 scrollbar-thin">
-        <div className="space-y-8">
+      <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-thin">
+        <div className="space-y-7">
           {Object.entries(groupedLessons).map(([topic, lessonsInTopic]) => (
-            <div key={topic} className="space-y-3">
-              <div className="ml-2 mb-2">
+            <div key={topic} className="space-y-2.5">
+              <div className="ml-2 mb-1">
                 <h3 className="text-[11px] font-extrabold text-primary-600 uppercase tracking-widest">{topic}</h3>
                 <p className="text-xs text-gray-400 mt-0.5 max-w-[90%] leading-relaxed">{TOPIC_SUMMARIES[topic]}</p>
               </div>
@@ -132,7 +211,7 @@ export default function Sidebar({ activeLesson, onSelectLesson, onOpenInstructio
                             }
                           `}
                         >
-                          <span className={`min-w-[42px] font-semibold mt-0.5 text-xs ${isActive ? 'text-primary-600' : 'text-gray-400'}`}>
+                          <span className={`min-w-[40px] font-semibold mt-0.5 text-xs ${isActive ? 'text-primary-600' : 'text-gray-400'}`}>
                             Bài {lesson.id}
                           </span>
                           <div className="flex-1 pr-1">
@@ -153,7 +232,7 @@ export default function Sidebar({ activeLesson, onSelectLesson, onOpenInstructio
                             e.stopPropagation();
                             toggleCompleteLesson(lesson.id);
                           }}
-                          title={isCompleted ? 'Đã hoàn thành (Bấm để bỏ dấu)' : 'Đánh dấu đã hoàn thành'}
+                          title={isCompleted ? 'Đã hoàn thành (Bấm để hủy)' : 'Đánh dấu đã hoàn thành'}
                           className="p-1.5 text-gray-300 hover:text-primary-500 transition-colors shrink-0"
                         >
                           {isCompleted ? (
@@ -164,7 +243,7 @@ export default function Sidebar({ activeLesson, onSelectLesson, onOpenInstructio
                         </button>
                       </div>
 
-                      {/* Tooltip mô tả chi tiết */}
+                      {/* Tooltip mục tiêu bài học */}
                       <div className="absolute left-[105%] top-1/2 -translate-y-1/2 w-64 bg-gray-800 text-white text-xs p-3 rounded-lg opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 z-50 shadow-xl hidden md:block">
                         <div className="font-bold mb-1">Mục tiêu bài học:</div>
                         <div className="text-gray-200 leading-relaxed">{lesson.desc}</div>
@@ -180,27 +259,78 @@ export default function Sidebar({ activeLesson, onSelectLesson, onOpenInstructio
       </div>
       
       {/* Nút Học tiếp & Hướng dẫn cố định ở dưới cùng */}
-      <div className="p-4 border-t border-gray-200 bg-white flex flex-col gap-2.5">
+      <div className="p-3.5 border-t border-gray-200 bg-white flex flex-col gap-2">
         <button 
           onClick={onOpenInstruction}
-          className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-xl flex justify-center items-center gap-2 transition-all border border-blue-200 text-sm"
+          className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-3 rounded-xl flex justify-center items-center gap-2 transition-all border border-blue-200 text-xs"
         >
-          <Book className="w-4 h-4" />
+          <Book className="w-3.5 h-3.5" />
           Hướng dẫn sử dụng
         </button>
 
         <button 
           onClick={handleContinue}
-          className="w-full bg-primary-600 hover:bg-primary-500 text-white font-medium py-2.5 px-4 rounded-xl flex justify-center items-center gap-2 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 text-sm"
+          className="w-full bg-primary-600 hover:bg-primary-500 text-white font-medium py-2.5 px-3 rounded-xl flex justify-center items-center gap-2 transition-all shadow-md hover:shadow-lg active:translate-y-0 text-xs"
         >
-          <PlayCircle size={18} />
+          <PlayCircle size={16} />
           {activeLesson ? 'Chuyển bài tiếp theo' : 'Bắt đầu học ngay'}
         </button>
+
+        {!isTeacher && (
+          <button
+            onClick={() => setIsPinModalOpen(true)}
+            className="text-[10px] text-gray-400 hover:text-gray-600 flex items-center justify-center gap-1 mt-1 transition-colors"
+          >
+            <KeyRound size={10} /> Chế độ Giáo viên (Mã PIN)
+          </button>
+        )}
 
         <div className="text-center text-[10px] text-gray-400 font-medium">
           © Copyright by Giáo viên Trần Thị Ngà
         </div>
       </div>
+
+      {/* Modal Nhập Mã PIN Giáo viên */}
+      {isPinModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl border border-gray-200 text-center animate-scale-up">
+            <ShieldCheck size={36} className="text-primary-600 mx-auto mb-2" />
+            <h3 className="font-bold text-gray-800 text-base mb-1">Kích hoạt Quyền Giáo viên</h3>
+            <p className="text-xs text-gray-500 mb-4">Nhập mã PIN bảo mật do Ban Giảng Dạy cấp:</p>
+
+            <form onSubmit={handleVerifyPin} className="space-y-3">
+              <input
+                type="password"
+                value={pinInput}
+                onChange={(e) => setPinInput(e.target.value)}
+                placeholder="Nhập mã PIN Giáo viên..."
+                className="w-full p-2.5 border border-gray-300 rounded-xl text-center font-mono text-sm tracking-widest focus:ring-2 focus:ring-primary-500 outline-none"
+              />
+
+              {pinError && (
+                <div className="text-xs text-red-500 font-medium">{pinError}</div>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsPinModalOpen(false)}
+                  className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-medium"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-xl text-xs font-bold"
+                >
+                  Xác nhận
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

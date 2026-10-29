@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import { Play, Bug, Terminal, Cloud, CloudUpload, HardDrive, Paintbrush, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { logDebugEvent } from '../services/analyticsService';
 
 // Mẫu code khởi đầu gợi ý theo từng bài học SGK Tin học 10 Kết nối tri thức
 const LESSON_STARTER_CODES = {
@@ -194,6 +195,8 @@ builtins.input = custom_input
          setOutput(prev => prev + '\n\n❌ Lỗi thực thi:\n' + errorMsg);
       }
       setIsOutputError(true);
+      // Tự động ghi nhật ký gỡ lỗi (Debugging Log NCKH)
+      logDebugEvent(currentUser?.uid, lessonId, code, errorMsg);
     }
   };
 
@@ -204,6 +207,8 @@ builtins.input = custom_input
   const handleBugHunt = () => {
     triggerImmediateCloudSync();
     if (!code.trim()) return;
+    // Ghi nhật ký học sinh kích hoạt Săn Bug
+    logDebugEvent(currentUser?.uid, lessonId, code, output || 'Học sinh kích hoạt tính năng Săn Bug (AI)');
     onAnalyzeError(code);
   };
 

@@ -1,7 +1,12 @@
 node_modules/
 .env
 .env.*
+*.env
+backend/.env
+frontend/.env
 !.env.example
 dist/
 build/
+.firebase/
 .DS_Store
+

@@ -5,18 +5,23 @@ import Chatbot from './components/Chatbot';
 import EditorPane from './components/EditorPane';
 import Login from './components/Login';
 import InstructionModal from './components/InstructionModal';
+import ClassSelectModal from './components/ClassSelectModal';
+import TeacherDashboard from './components/TeacherDashboard';
+import StudentDiaryModal from './components/StudentDiaryModal';
 import { Menu, MessageSquare, Code } from 'lucide-react';
 
 function MainApp() {
-  const { currentUser } = useAuth();
+  const { currentUser, needsClassSelection } = useAuth();
   const [activeLesson, setActiveLesson] = useState(null);
   const [activeTab, setActiveTab] = useState('chat'); // 'sidebar', 'chat', 'editor'
   const [errorToAnalyze, setErrorToAnalyze] = useState(null);
   const [isInstructionOpen, setIsInstructionOpen] = useState(false);
+  const [isDiaryOpen, setIsDiaryOpen] = useState(false);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
 
   const handleLessonSelect = (lesson) => {
     setActiveLesson(lesson);
-    // On mobile, auto-switch to chat after selecting lesson
+    // Trên mobile, tự động chuyển sang tab chat sau khi chọn bài
     if (window.innerWidth < 768) {
       setActiveTab('chat');
     }
@@ -63,7 +68,13 @@ function MainApp() {
         
         {/* Sidebar Pane (20% Desktop) */}
         <div className={`${activeTab === 'sidebar' ? 'block' : 'hidden'} md:block w-full md:w-1/5 h-full border-r border-gray-200 bg-white shadow-sm z-10`}>
-          <Sidebar activeLesson={activeLesson} onSelectLesson={handleLessonSelect} onOpenInstruction={() => setIsInstructionOpen(true)} />
+          <Sidebar 
+            activeLesson={activeLesson} 
+            onSelectLesson={handleLessonSelect} 
+            onOpenInstruction={() => setIsInstructionOpen(true)}
+            onOpenDiary={() => setIsDiaryOpen(true)}
+            onOpenDashboard={() => setIsDashboardOpen(true)}
+          />
         </div>
 
         {/* Chatbot Pane (40% Desktop) */}
@@ -77,7 +88,18 @@ function MainApp() {
         </div>
       </div>
 
+      {/* Modal Hướng Dẫn Sử Dụng */}
       <InstructionModal isOpen={isInstructionOpen} onClose={() => setIsInstructionOpen(false)} />
+
+      {/* Modal Onboarding Chọn Lớp 10A1-10A9 cho Học sinh mới */}
+      <ClassSelectModal isOpen={needsClassSelection} />
+
+      {/* Modal Sổ Tay Săn Bug Cá Nhân cho Học Sinh */}
+      <StudentDiaryModal isOpen={isDiaryOpen} onClose={() => setIsDiaryOpen(false)} />
+
+      {/* Bảng Điều Khiển Sư Phạm & Xuất Dữ Liệu NCKH cho Giáo Viên */}
+      <TeacherDashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
+
     </div>
   );
 }

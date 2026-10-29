@@ -7,11 +7,20 @@ import {
   onAuthStateChanged 
 } from 'firebase/auth';
 import { 
-  getFirestore, 
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   doc, 
   setDoc, 
-  getDoc, 
-  collection, 
+  getDoc,
+  getDocs,
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  addDoc,
   serverTimestamp 
 } from 'firebase/firestore';
 
@@ -47,7 +56,16 @@ if (isFirebaseConfigured()) {
     auth = getAuth(app);
     googleProvider = new GoogleAuthProvider();
     googleProvider.setCustomParameters({ prompt: 'select_account' });
-    db = getFirestore(app);
+
+    // Kích hoạt tường minh bộ đệm Offline Persistence (IndexedDB) đa tab (Chuẩn hóa Phần I)
+    try {
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+      });
+    } catch (cacheErr) {
+      console.warn('Lưu ý: Không thể khởi tạo persistentLocalCache, dùng getFirestore mặc định:', cacheErr);
+      db = getFirestore(app);
+    }
   } catch (err) {
     console.warn('Cảnh báo: Không thể khởi tạo Firebase SDK:', err);
   }
@@ -66,6 +84,12 @@ export {
   doc,
   setDoc,
   getDoc,
+  getDocs,
   collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  addDoc,
   serverTimestamp
 };

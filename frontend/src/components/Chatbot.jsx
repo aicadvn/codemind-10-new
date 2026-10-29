@@ -1,49 +1,81 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Send, Bot, User, Loader2 } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, History } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { saveSocraticChat, loadSocraticChat } from '../services/analyticsService';
 
 export default function Chatbot({ activeLesson, errorToAnalyze }) {
+  const { currentUser } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef(null);
 
-  // Auto scroll to bottom
+  // Tự động cuộn xuống cuối đoạn chat
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Initial greeting if no active lesson
+  // Khởi tạo lời chào ban đầu nếu chưa chọn bài
   useEffect(() => {
-    setMessages([{
-      role: 'CodeMind',
-      text: `Chào mừng bạn đến với **CodeMind 10**! 🚀 \n\nTôi là gia sư AI cá nhân của bạn, hãy chọn một bài học ở thanh bên trái (Lộ trình) để bắt đầu nhé!`
-    }]);
-  }, []);
-
-  // Handle lesson change
-  useEffect(() => {
-    if (activeLesson) {
+    if (!activeLesson) {
       setMessages([{
         role: 'CodeMind',
-        text: `Chào bạn, chúng ta cùng tìm hiểu **Bài ${activeLesson.id}: ${activeLesson.title}** nhé! 📚\n\nBạn muốn làm gì tiếp theo?\n\n**[1]** Ôn tập kiến thức cũ\n**[2]** Học bài mới\n**[3]** Săn Bug (Sửa lỗi code đang làm)`
+        text: `Chào mừng bạn đến với **CodeMind 10**! 🚀 \n\nTôi là gia sư AI cá nhân của bạn theo chuẩn SGK Tin học 10 Kết nối tri thức. Hãy chọn một bài học ở thanh bên trái (Lộ trình) để bắt đầu nhé!`
       }]);
     }
-  }, [activeLesson]);
+  }, []);
 
-  // Handle Bug Hunter
+  // Xử lý chuyển bài học: Tải lại toàn bộ lịch sử đàm thoại Socrates cũ từ Cloud Firestore
+  useEffect(() => {
+    if (activeLesson) {
+      let isSubscribed = true;
+
+      async function restoreLessonChat() {
+        if (currentUser && !currentUser.isPasscode) {
+          const savedMessages = await loadSocraticChat(currentUser.uid, activeLesson.id);
+          if (savedMessages && savedMessages.length > 0 && isSubscribed) {
+            setMessages(savedMessages);
+            return;
+          }
+        }
+
+        // Lời chào gợi ý sư phạm Socrates mặc định
+        if (isSubscribed) {
+          setMessages([{
+            role: 'CodeMind',
+            text: `Chào bạn, chúng ta cùng tìm hiểu **Bài ${activeLesson.id}: ${activeLesson.title}** nhé! 📚\n\nBạn muốn làm gì tiếp theo?\n\n**[1]** Ôn tập kiến thức cũ\n**[2]** Học bài mới\n**[3]** Săn Bug (Sửa lỗi code đang làm)`
+          }]);
+        }
+      }
+
+      restoreLessonChat();
+
+      return () => {
+        isSubscribed = false;
+      };
+    }
+  }, [activeLesson, currentUser]);
+
+  // Xử lý khi bấm nút "Săn Bug (AI)" từ Editor: Gắp code lỗi sang cho AI phân tích
   useEffect(() => {
     if (errorToAnalyze) {
-      const userMsg = { role: 'user', text: `Hãy giúp tôi phân tích lỗi trong đoạn code sau:\n\n\`\`\`python\n${errorToAnalyze}\n\`\`\`` };
-      setMessages(prev => [...prev, userMsg]);
-      sendMessageApi([...messages, userMsg]);
+      const userMsg = { 
+        role: 'user', 
+        text: `Hãy giúp tôi làm thám tử săn bug và phân tích gợi ý lỗi trong đoạn code sau:\n\n\`\`\`python\n${errorToAnalyze}\n\`\`\`` 
+      };
+      setMessages(prev => {
+        const next = [...prev, userMsg];
+        sendMessageApi(next);
+        return next;
+      });
     }
   }, [errorToAnalyze]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isLoading) return;
     
     const userMsg = { role: 'user', text: input };
     const newMessages = [...messages, userMsg];
@@ -56,15 +88,13 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
   const sendMessageApi = async (chatHistory) => {
     setIsLoading(true);
 
-    // Format for Gemini API (user/model)
+    // Format theo chuẩn Gemini API (user/model)
     let formattedHistory = chatHistory.map(msg => ({
       role: msg.role === 'CodeMind' ? 'model' : 'user',
       parts: [{ text: msg.text }]
     }));
 
-    // Gemini API BẮT BUỘC tin nhắn đầu tiên trong mảng Lịch sử chat (history) phải xuất phát từ 'user'
-    // Do tin nhắn chào sân của ứng dụng luôn là 'model' (CodeMind), API sẽ ném lỗi 400.
-    // Cách xử lý khéo léo: Chèn tự động một câu chào giả từ 'user' lên đầu mảng để tạo đà (chỉ xử lý ngầm dưới API)
+    // Đảm bảo tin nhắn đầu tiên của lịch sử chat luôn là user
     if (formattedHistory.length > 0 && formattedHistory[0].role === 'model') {
       formattedHistory = [
         { role: 'user', parts: [{ text: 'Xin chào gia sư CodeMind, hãy bắt đầu buổi học nào!' }] },
@@ -76,19 +106,26 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
       const res = await fetch(`${backendUrl}/api/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: formattedHistory })
       });
 
       const data = await res.json();
       
+      let finalMessages = [...chatHistory];
       if (data.reply) {
-        setMessages(prev => [...prev, { role: 'CodeMind', text: data.reply }]);
+        finalMessages.push({ role: 'CodeMind', text: data.reply });
       } else {
-        setMessages(prev => [...prev, { role: 'CodeMind', text: 'Xin lỗi, hệ thống AI đang bận. Bạn hãy thử lại sau nhé!' }]);
+        finalMessages.push({ role: 'CodeMind', text: 'Xin lỗi, hệ thống AI đang bận. Bạn hãy thử lại sau nhé!' });
       }
+
+      setMessages(finalMessages);
+
+      // Tự động lưu vết toàn bộ tiến trình tương tác Socratic lên Cloud Firestore
+      if (activeLesson && currentUser && !currentUser.isPasscode) {
+        saveSocraticChat(currentUser.uid, activeLesson.id, finalMessages);
+      }
+
     } catch (error) {
       console.error(error);
       setMessages(prev => [...prev, { role: 'CodeMind', text: 'Đã xảy ra lỗi kết nối với máy chủ AI. 🐛' }]);
@@ -107,20 +144,33 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
   return (
     <div className="flex flex-col h-full bg-white relative">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-white shadow-sm z-10 sticky top-0 flex gap-3 items-center">
-        <div className="bg-primary-100 text-primary-600 p-2.5 rounded-xl">
-          <Bot size={28} />
+      <div className="p-4 border-b border-gray-200 bg-white shadow-sm z-10 sticky top-0 flex gap-3 items-center justify-between">
+        <div className="flex gap-3 items-center">
+          <div className="bg-primary-100 text-primary-600 p-2.5 rounded-xl">
+            <Bot size={26} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="font-black text-gray-800 text-lg tracking-tight">Gia sư CodeMind</h2>
+              <span className="text-[10px] bg-primary-100 text-primary-800 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Sparkles size={11} /> Socrates AI
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-500 italic mt-0.5">Bản quyền THPT Lạng Giang số 1</p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-extrabold text-gray-800 text-xl tracking-tight">CodeMind 10</h2>
-          <p className="text-xs text-gray-500 italic mt-0.5 leading-tight">Gia sư Tin học AI - Bản quyền THPT Lạng Giang số 1</p>
-          <p className="text-[11px] text-green-600 font-medium flex items-center gap-1.5 mt-1.5">
-            <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span> Đang hoạt động
-          </p>
+
+        <div className="text-right">
+          <span className="text-[11px] text-emerald-600 font-medium flex items-center gap-1.5 justify-end">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse"></span> Sẵn sàng
+          </span>
+          {activeLesson && (
+            <span className="text-[10px] text-gray-400 block font-medium">Bài {activeLesson.id}</span>
+          )}
         </div>
       </div>
 
-      {/* Chat Area */}
+      {/* Vùng hiển thị cuộc trò chuyện */}
       <div 
         ref={scrollRef} 
         className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
@@ -137,7 +187,7 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
               className={`max-w-[85%] rounded-2xl p-4 shadow-sm prose prose-sm md:prose-base
                 ${msg.role === 'user' 
                   ? 'bg-primary-600 text-white rounded-tr-none prose-invert' 
-                  : 'bg-white border border-gray-100 text-gray-800 text-[15px] rounded-tl-none'}
+                  : 'bg-white border border-gray-100 text-gray-800 text-[14px] leading-relaxed rounded-tl-none'}
               `}
             >
               <ReactMarkdown>{msg.text}</ReactMarkdown>
@@ -150,6 +200,7 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
             )}
           </div>
         ))}
+
         {isLoading && (
           <div className="flex gap-3 justify-start animate-fade-in">
             <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center mt-1 relative">
@@ -158,36 +209,36 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
             </div>
             <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex flex-col justify-center h-[52px]">
               <div className="flex gap-1.5 items-center">
-                <div className="w-2.5 h-2.5 bg-primary-400/80 rounded-full animate-bounce [animation-duration:1s] [animation-delay:-0.3s]"></div>
-                <div className="w-2.5 h-2.5 bg-primary-500/80 rounded-full animate-bounce [animation-duration:1s] [animation-delay:-0.15s]"></div>
-                <div className="w-2.5 h-2.5 bg-primary-600/80 rounded-full animate-bounce [animation-duration:1s]"></div>
+                <div className="w-2.5 h-2.5 bg-primary-400 rounded-full animate-bounce [animation-duration:1s] [animation-delay:-0.3s]"></div>
+                <div className="w-2.5 h-2.5 bg-primary-500 rounded-full animate-bounce [animation-duration:1s] [animation-delay:-0.15s]"></div>
+                <div className="w-2.5 h-2.5 bg-primary-600 rounded-full animate-bounce [animation-duration:1s]"></div>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 bg-white border-t border-gray-200 shrink-0 z-10 drop-shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+      {/* Vùng nhập câu hỏi */}
+      <div className="p-3.5 bg-white border-t border-gray-200 shrink-0 z-10 shadow-sm">
         <div className="flex bg-gray-50 rounded-xl border border-gray-200 p-1 focus-within:ring-2 focus-within:ring-primary-300 focus-within:border-primary-400 transition-all">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Nhắn tin cho CodeMind..."
-            className="flex-1 bg-transparent border-none focus:ring-0 resize-none p-3 h-12 max-h-32 text-gray-700 outline-none text-sm md:text-base leading-relaxed scrollbar-thin"
+            placeholder="Hỏi Gia sư CodeMind về bài học, săn bug..."
+            className="flex-1 bg-transparent border-none focus:ring-0 resize-none p-2.5 h-11 max-h-32 text-gray-700 outline-none text-xs sm:text-sm leading-relaxed scrollbar-thin"
             rows="1"
           />
           <button 
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
-            className="bg-primary-600 text-white rounded-lg px-4 h-12 hover:bg-primary-500 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none transition-all duration-300 flex items-center justify-center aspect-square md:aspect-auto self-end"
+            className="bg-primary-600 text-white rounded-lg px-3.5 h-10 hover:bg-primary-500 hover:shadow disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center aspect-square self-end"
           >
-            <Send size={18} />
+            <Send size={16} />
           </button>
         </div>
-        <div className="text-center mt-2">
-           <span className="text-xs text-gray-400">CodeMind có thể mắc lỗi nhỏ. Hãy chủ động kiểm tra lại.</span>
+        <div className="text-center mt-1.5 flex items-center justify-center gap-1 text-[11px] text-gray-400">
+          <History size={11} /> Hội thoại được lưu tự động theo từng bài học
         </div>
       </div>
     </div>
