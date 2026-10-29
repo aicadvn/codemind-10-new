@@ -87,8 +87,8 @@ export default function AdminPortal({
   const [teacherActionError, setTeacherActionError] = useState('');
 
   // Tải dữ liệu ban đầu
-  const loadAllData = async () => {
-    setIsLoading(true);
+  const loadAllData = async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const [studentsData, teachersData] = await Promise.all([
         fetchAllRegisteredStudents(),
@@ -99,7 +99,7 @@ export default function AdminPortal({
     } catch (err) {
       console.error('Lỗi tải dữ liệu Quản trị:', err);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
@@ -210,15 +210,20 @@ export default function AdminPortal({
 
   // Xóa học sinh
   const handleDeleteStudent = async (student) => {
-    const confirmMsg = `Bạn có chắc chắn muốn xóa học sinh "${student.fullName || student.email}" (${student.className || 'Chưa xếp lớp'}) khỏi hệ thống?\n\nHọc sinh này sẽ không thể đăng nhập vào phòng học được nữa.`;
+    const confirmMsg = `Bạn có chắc chắn muốn xóa học sinh "${student.fullName || student.email}" (${student.className || 'Chưa xếp lớp'}) khỏi hệ thống?\n\nHọc sinh này sẽ bị loại bỏ hoàn toàn và không thể đăng nhập vào phòng học được nữa.`;
     if (!window.confirm(confirmMsg)) return;
+
+    // 1. Cập nhật state tức thì để UI loại bỏ học sinh ngay lập tức
+    const targetEmail = (student.email || '').toLowerCase().trim();
+    setStudents(prev => prev.filter(s => (s.email || '').toLowerCase().trim() !== targetEmail));
 
     try {
       await deleteStudentFromSystem(student.email);
-      await loadAllData();
-      alert('Đã xóa học sinh khỏi hệ thống!');
+      // 2. Tải lại toàn bộ dữ liệu nền ngầm để giữ UI mượt mà
+      await loadAllData(true);
     } catch (err) {
       alert(`Lỗi xóa học sinh: ${err.message}`);
+      await loadAllData(false);
     }
   };
 

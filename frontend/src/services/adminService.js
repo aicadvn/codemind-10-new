@@ -238,7 +238,7 @@ export async function checkStudentAccessAllowed(email) {
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-        if (data.status !== 'suspended') {
+        if (data.status !== 'suspended' && data.status !== 'deleted' && !data.deleted) {
           return { 
             isAllowed: true, 
             isTeacher: false, 
@@ -256,7 +256,7 @@ export async function checkStudentAccessAllowed(email) {
       const querySnap = await getDocs(q);
       if (!querySnap.empty) {
         const data = querySnap.docs[0].data();
-        if (data.status !== 'suspended') {
+        if (data.status !== 'suspended' && data.status !== 'deleted' && !data.deleted) {
           return {
             isAllowed: true,
             isTeacher: false,
@@ -323,6 +323,10 @@ export async function fetchAllRegisteredStudents() {
     snap.forEach(d => {
       const data = d.data();
       const normEmail = normalizeEmail(data.email || d.id);
+      // Bỏ qua nếu học sinh bị đánh dấu xóa hoặc đình chỉ
+      if (data.status === 'suspended' || data.status === 'deleted' || data.deleted === true) {
+        return;
+      }
       studentsMap.set(normEmail, {
         id: d.id,
         ...data,
@@ -353,6 +357,11 @@ export async function fetchAllRegisteredStudents() {
       const normEmail = normalizeEmail(uData.email);
       if (!normEmail) return;
 
+      // Bỏ qua nếu tài khoản học sinh đã bị xóa hoặc đình chỉ
+      if (uData.status === 'suspended' || uData.status === 'deleted' || uData.deleted === true || uData.role === 'unregistered_student') {
+        return;
+      }
+
       const completedCount = Array.isArray(uData.completedLessons) ? uData.completedLessons.length : 0;
       const bugsCount = uData.totalBugs || 0;
       const lastActive = uData.lastActive || uData.lastLogin || null;
@@ -380,7 +389,7 @@ export async function fetchAllRegisteredStudents() {
           email: normEmail,
           fullName: uData.displayName || 'Học sinh',
           className: uData.className || '10A1',
-          status: uData.status === 'suspended' ? 'suspended' : 'active',
+          status: 'active',
           isActivated: true,
           completedLessonsCount: completedCount,
           completedLessons: uData.completedLessons || [],
@@ -392,17 +401,15 @@ export async function fetchAllRegisteredStudents() {
         studentsMap.set(normEmail, newStudentEntry);
 
         // Tự động đồng bộ lưu vào registered_students để đảm bảo tính liên tục
-        if (newStudentEntry.status === 'active') {
-          const docId = getStudentDocId(normEmail);
-          setDoc(doc(db, 'registered_students', docId), {
-            email: normEmail,
-            fullName: newStudentEntry.fullName,
-            className: newStudentEntry.className,
-            status: 'active',
-            autoSynced: true,
-            updatedAt: serverTimestamp()
-          }, { merge: true }).catch(err => console.warn('Lỗi auto-sync vào registered_students:', err));
-        }
+        const docId = getStudentDocId(normEmail);
+        setDoc(doc(db, 'registered_students', docId), {
+          email: normEmail,
+          fullName: newStudentEntry.fullName,
+          className: newStudentEntry.className,
+          status: 'active',
+          autoSynced: true,
+          updatedAt: serverTimestamp()
+        }, { merge: true }).catch(err => console.warn('Lỗi auto-sync vào registered_students:', err));
       }
     });
 
@@ -453,22 +460,30 @@ export async function deleteStudentFromSystem(email) {
   const normEmail = normalizeEmail(email);
   const docId = getStudentDocId(normEmail);
 
-  // 1. Xóa khỏi collection `registered_students`
-  const studentRef = doc(db, 'registered_students', docId);
-  await deleteDoc(studentRef);
+  // 1. Xóa hoàn toàn khỏi collection `registered_students`
+  try {
+    const studentRef = doc(db, 'registered_students', docId);
+    await deleteDoc(studentRef);
 
-  // 2. Cập nhật trong `users` để đánh dấu suspended
+    // Cũng tìm và xóa mọi document trong registered_students có email trùng khớp
+    const regQ = query(collection(db, 'registered_students'), where('email', '==', normEmail));
+    const regSnap = await getDocs(regQ);
+    for (const rDoc of regSnap.docs) {
+      await deleteDoc(rDoc.ref);
+    }
+  } catch (err) {
+    console.warn('Lỗi xóa registered_students:', err);
+  }
+
+  // 2. Xóa hoàn toàn tài liệu của học sinh này trong `users` để loại bỏ triệt để
   try {
     const q = query(collection(db, 'users'), where('email', '==', normEmail));
     const snap = await getDocs(q);
-    snap.forEach(userDoc => {
-      setDoc(userDoc.ref, { 
-        status: 'suspended', 
-        role: 'unregistered_student' 
-      }, { merge: true });
-    });
+    for (const userDoc of snap.docs) {
+      await deleteDoc(userDoc.ref);
+    }
   } catch (e) {
-    console.warn('Lỗi cập nhật users khi xóa học sinh:', e);
+    console.warn('Lỗi xóa users khi xóa học sinh:', e);
   }
 
   return true;

@@ -43,13 +43,13 @@ service cloud.firestore {
     match /users/{userId} {
       // Giáo viên có quyền ĐỌC dữ liệu học sinh để hiển thị Teacher Dashboard
       allow read: if isOwner(userId) || isTeacher() || isSuperAdmin();
-      // Học sinh cập nhật tài khoản của mình, Super Admin có quyền cập nhật phân quyền
-      allow write: if isOwner(userId) || isSuperAdmin();
+      // Học sinh cập nhật tài khoản của mình, Super Admin và Giáo viên có quyền xóa/cập nhật tài khoản học sinh
+      allow write: if isOwner(userId) || isSuperAdmin() || isTeacher();
 
       // Tất cả các sub-collections: codeSnippets, debugLogs, socraticChats, sessions
       match /{allSubcollections=**} {
         allow read: if isOwner(userId) || isTeacher() || isSuperAdmin();
-        allow write: if isOwner(userId);
+        allow write: if isOwner(userId) || isSuperAdmin() || isTeacher();
       }
     }
     

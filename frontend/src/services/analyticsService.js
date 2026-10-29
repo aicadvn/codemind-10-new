@@ -250,6 +250,10 @@ export async function fetchClassStudents(classNameFilter = 'all') {
       if (isTeacherAccount(data)) {
         return;
       }
+      // Loại trừ học sinh đã bị xóa hoặc đình chỉ
+      if (data.status === 'suspended' || data.status === 'deleted' || data.deleted === true || data.role === 'unregistered_student') {
+        return;
+      }
       students.push({
         id: docSnap.id,
         ...data
