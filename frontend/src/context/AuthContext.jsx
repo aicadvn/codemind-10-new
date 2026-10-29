@@ -121,7 +121,7 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // Cập nhật chi đoàn lớp học sinh (Chỉ cần chọn 1 lần đầu)
+  // Cập nhật lớp học sinh (Chỉ cần chọn 1 lần đầu)
   const updateStudentClass = async (className) => {
     setUserClass(className);
     setNeedsClassSelection(false);
@@ -131,7 +131,7 @@ export function AuthProvider({ children }) {
         const userRef = doc(db, 'users', currentUser.uid);
         await setDoc(userRef, { className }, { merge: true });
       } catch (e) {
-        console.warn('Lỗi lưu chi đoàn lớp:', e);
+        console.warn('Lỗi lưu lớp học:', e);
       }
     } else if (currentUser?.isPasscode) {
       sessionStorage.setItem('codemind_passcode_class', className);

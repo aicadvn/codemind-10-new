@@ -137,7 +137,7 @@ export default function TeacherDashboard({ isOpen, onClose }) {
             >
               <option value="all">Tất cả các lớp (10A1 - 10A9)</option>
               {SCHOOL_CLASSES.map(cls => (
-                <option key={cls} value={cls}>Chi đoàn {cls}</option>
+                <option key={cls} value={cls}>Lớp {cls}</option>
               ))}
             </select>
           </div>
@@ -171,7 +171,7 @@ export default function TeacherDashboard({ isOpen, onClose }) {
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200 text-gray-600 font-bold uppercase tracking-wider text-[11px]">
                     <th className="p-3">Học sinh</th>
-                    <th className="p-3">Chi đoàn</th>
+                    <th className="p-3">Lớp</th>
                     <th className="p-3">Tiến độ bài học (Chủ đề 5)</th>
                     <th className="p-3 text-center">Số Bug đã gỡ</th>
                     <th className="p-3">Hoạt động gần nhất</th>

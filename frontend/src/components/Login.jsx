@@ -177,10 +177,10 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
             {showPasscodeOption && (
               <form onSubmit={handlePasscodeSubmit} className="mt-3 space-y-3 animate-fade-in">
                 
-                {/* Chọn chi đoàn lớp (10A1 - 10A9) */}
+                {/* Chọn lớp (10A1 - 10A9) */}
                 <div>
                   <label className="block text-[11px] font-semibold text-gray-600 mb-1 flex items-center gap-1">
-                    <School size={12} className="text-blue-600" /> Chọn chi đoàn lớp của em:
+                    <School size={12} className="text-blue-600" /> Chọn lớp của em:
                   </label>
                   <select
                     value={selectedClass}

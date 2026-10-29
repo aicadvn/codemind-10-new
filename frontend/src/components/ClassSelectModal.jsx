@@ -27,7 +27,7 @@ export default function ClassSelectModal({ isOpen }) {
           Chọn Lớp của bạn
         </h2>
         <p className="text-xs sm:text-sm text-gray-500 mb-6 leading-relaxed">
-          Chào <b className="text-gray-700">{currentUser?.displayName || 'bạn'}</b>! Để Gia sư AI và Thầy/Cô đồng hành hỗ trợ bạn học tập tốt nhất, hãy chọn đúng chi đoàn lớp của bạn nhé:
+          Chào <b className="text-gray-700">{currentUser?.displayName || 'bạn'}</b>! Để Gia sư AI và Thầy/Cô đồng hành hỗ trợ bạn học tập tốt nhất, hãy chọn đúng lớp của bạn nhé:
         </p>
 
         {/* Lưới chọn 9 lớp từ 10A1 đến 10A9 */}

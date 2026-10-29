@@ -346,7 +346,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
 
             <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-slate-800 hover:border-emerald-500/40 transition-all text-center group">
               <div className="text-3xl sm:text-4xl font-black text-emerald-400 group-hover:scale-105 transition-transform">9</div>
-              <div className="text-xs sm:text-sm font-bold text-white mt-1">Chi Đoàn Lớp Khối 10</div>
+              <div className="text-xs sm:text-sm font-bold text-white mt-1">Lớp Khối 10</div>
               <p className="text-[11px] text-slate-400 mt-0.5">Từ 10A1 đến 10A9 thực nghiệm</p>
             </div>
 
