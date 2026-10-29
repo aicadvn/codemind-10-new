@@ -14,6 +14,8 @@ import {
 import { 
   SCHOOL_CLASSES, 
   SUPER_ADMIN_EMAIL, 
+  SUPER_ADMIN_EMAILS,
+  isSuperAdmin,
   TEACHER_PROFILES, 
   TEACHER_EMAILS 
 } from '../config/schoolConfig';
@@ -387,7 +389,7 @@ export async function fetchAllTeachersList() {
           id: d.id,
           ...data,
           email: norm,
-          isDefault: norm === SUPER_ADMIN_EMAIL
+          isDefault: isSuperAdmin(norm)
         });
       });
     } catch (err) {
@@ -469,7 +471,7 @@ export async function removeTeacherFromSystem(email) {
   if (!db) throw new Error('Không có kết nối Firestore.');
   const normEmail = normalizeEmail(email);
 
-  if (normEmail === SUPER_ADMIN_EMAIL) {
+  if (isSuperAdmin(normEmail)) {
     throw new Error('Không thể xóa tài khoản Quản trị viên tối cao của hệ thống!');
   }
 

@@ -171,7 +171,9 @@ export function AuthProvider({ children }) {
               }
 
               const finalDisplayName = isSuper 
-                ? 'Trần Thị Ngà — Quản trị hệ thống' 
+                ? (normEmail === 'nguyentrunghoa@gmail.com' 
+                    ? 'Thầy Nguyễn Trung Hòa — Quản trị hệ thống' 
+                    : 'Cô Trần Thị Ngà — Quản trị hệ thống') 
                 : (isEmailTeacher 
                     ? (TEACHER_PROFILES[normEmail]?.name || 'Giáo viên Tin học') 
                     : (user.displayName || 'Học sinh THPT'));
@@ -245,11 +247,20 @@ export function AuthProvider({ children }) {
   const activateTeacherModeWithPIN = async (pin) => {
     const cleanPin = (pin || '').trim();
     if (VALID_TEACHER_PINS.includes(cleanPin) || cleanPin === TEACHER_PIN) {
-      setUserRole('teacher');
+      const isSuper = cleanPin === 'NGA_LG1_2026' || cleanPin === '261088' || cleanPin === '1088' || cleanPin === '202610' || cleanPin === 'GV_LG1_2026';
+      setUserRole(isSuper ? 'admin' : 'teacher');
+      if (isSuper) {
+        setIsAdmin(true);
+        setAssignedClasses(['all']);
+      }
       if (currentUser && !currentUser.isPasscode && db) {
         try {
           const userRef = doc(db, 'users', currentUser.uid);
-          await setDoc(userRef, { role: 'teacher', className: 'Ban Giảng Dạy' }, { merge: true });
+          await setDoc(userRef, { 
+            role: isSuper ? 'admin' : 'teacher', 
+            className: 'Ban Giảng Dạy',
+            assignedClasses: isSuper ? ['all'] : ['10A1']
+          }, { merge: true });
         } catch (e) {
           console.warn('Lỗi cập nhật quyền Giáo viên:', e);
         }

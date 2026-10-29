@@ -102,7 +102,6 @@ export default function Sidebar({
     if (ok) {
       setIsPinModalOpen(false);
       setPinInput('');
-      alert('Đã kích hoạt Chế độ Giáo viên thành công!');
     } else {
       setPinError('Mã PIN không đúng. Vui lòng kiểm tra lại!');
     }

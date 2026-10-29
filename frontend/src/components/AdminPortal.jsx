@@ -26,7 +26,8 @@ import {
   School,
   FileSpreadsheet
 } from 'lucide-react';
-import { SCHOOL_CLASSES, SUPER_ADMIN_EMAIL, SUPER_ADMIN_TITLE } from '../config/schoolConfig';
+import { SCHOOL_CLASSES, SUPER_ADMIN_EMAIL, SUPER_ADMIN_TITLE, isSuperAdmin } from '../config/schoolConfig';
+import { useAuth } from '../context/AuthContext';
 import { 
   downloadStudentSampleCSV, 
   parseStudentCSV, 
@@ -49,6 +50,11 @@ export default function AdminPortal({
   onGoToLearning,
   onLogout 
 }) {
+  const { currentUser } = useAuth();
+  const currentAdminLabel = currentUser?.email === 'nguyentrunghoa@gmail.com'
+    ? 'Thầy Nguyễn Trung Hòa'
+    : (currentUser?.email === 'tranthingalg1@gmail.com' ? 'Cô Trần Thị Ngà' : (currentUser?.displayName || 'Ban Quản Trị'));
+
   const [activeTab, setActiveTab] = useState('students'); // 'students' | 'teachers'
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -259,7 +265,7 @@ export default function AdminPortal({
 
   // Xóa giáo viên
   const handleDeleteTeacher = async (teacher) => {
-    if (teacher.email === SUPER_ADMIN_EMAIL) {
+    if (isSuperAdmin(teacher.email)) {
       alert('Không thể xóa tài khoản Quản trị viên tối cao của hệ thống!');
       return;
     }
@@ -297,7 +303,7 @@ export default function AdminPortal({
                 </h1>
                 <span className="bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
                   <ShieldCheck size={12} />
-                  Quản trị viên: Cô Trần Thị Ngà
+                  Quản trị viên: {currentAdminLabel}
                 </span>
               </div>
               <p className="text-xs text-slate-300 mt-0.5 flex items-center gap-1.5">
@@ -598,7 +604,7 @@ export default function AdminPortal({
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {teachers.map((t) => {
-                      const isSuper = t.email === SUPER_ADMIN_EMAIL;
+                      const isSuper = isSuperAdmin(t.email);
                       const assignedText = (t.assignedClasses || []).includes('all') 
                         ? 'Toàn bộ 10 lớp khối 10' 
                         : (t.assignedClasses || []).join(', ') || 'Chưa phân lớp';

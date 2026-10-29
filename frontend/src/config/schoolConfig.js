@@ -2,28 +2,34 @@
 // Trường THPT Lạng Giang số 1 (Năm học 2026 - 2027)
 
 // 0. Thông tin Quản trị viên Tối cao (Super Admin)
-export const SUPER_ADMIN_EMAIL = 'tranthingalg1@gmail.com';
-export const SUPER_ADMIN_NAME = 'Trần Thị Ngà';
-export const SUPER_ADMIN_TITLE = 'Trần Thị Ngà — Quản trị hệ thống';
+export const SUPER_ADMIN_EMAILS = [
+  'tranthingalg1@gmail.com',  // Cô Trần Thị Ngà - Quản trị hệ thống
+  'nguyentrunghoa@gmail.com'  // Thầy Nguyễn Trung Hòa - Quản trị toàn diện hệ thống
+].map(e => e.toLowerCase().trim());
+
+export const SUPER_ADMIN_EMAIL = 'tranthingalg1@gmail.com'; // Email quản trị chính
+export const SUPER_ADMIN_NAME = 'Cô Trần Thị Ngà & Thầy Nguyễn Trung Hòa';
+export const SUPER_ADMIN_TITLE = 'Quản trị toàn diện hệ thống (Admin)';
 
 // Thông tin hỗ trợ dành cho học sinh chưa được cấp quyền
 export const ADMIN_CONTACT = {
-  name: 'Cô Trần Thị Ngà',
+  name: 'Ban Quản Trị Hệ Thống (Cô Ngà - Thầy Hòa)',
   role: 'Quản trị hệ thống CodeMind 10',
   phone: '0975 702 636',
   email: 'smilers.thp@gmail.com'
 };
 
-// Kiểm tra nhanh tài khoản Quản trị viên tối cao
+// Kiểm tra nhanh tài khoản Quản trị viên tối cao (Super Admin)
 export const isSuperAdmin = (email) => {
-  return (email || '').toLowerCase().trim() === SUPER_ADMIN_EMAIL.toLowerCase().trim();
+  const norm = (email || '').toLowerCase().trim();
+  return SUPER_ADMIN_EMAILS.includes(norm);
 };
 
 // 1. Danh sách Email Giáo viên mặc định ban đầu
 export const TEACHER_EMAILS = [
   'tranthingalg1@gmail.com',  // Cô Trần Thị Ngà - Quản trị hệ thống (Toàn khối 10)
-  'smilers.thp@gmail.com',    // Cô Trần Thị Ngà - GV Tin học THPT Lạng Giang số 1
-  'nguyentrunghoa@gmail.com'  // Thầy Nguyễn Trung Hòa
+  'nguyentrunghoa@gmail.com', // Thầy Nguyễn Trung Hòa - Quản trị toàn diện hệ thống (Toàn khối 10)
+  'smilers.thp@gmail.com'     // Cô Trần Thị Ngà - GV Tin học THPT Lạng Giang số 1
 ].map(email => email.toLowerCase().trim());
 
 // 2. Chi tiết cấu hình Giáo viên và Mã PIN Bảo mật riêng
@@ -33,21 +39,21 @@ export const TEACHER_PROFILES = {
     role: 'Quản trị hệ thống (Quản trị giáo viên & 10 lớp)',
     school: 'THPT Lạng Giang số 1',
     assignedClasses: ['all'],
-    pins: ['NGA_LG1_2026', '261088', '1088']
+    pins: ['NGA_LG1_2026', '261088', '1088', '202610']
+  },
+  'nguyentrunghoa@gmail.com': {
+    name: 'Thầy Nguyễn Trung Hòa',
+    role: 'Quản trị toàn diện hệ thống (Quản trị giáo viên & 10 lớp)',
+    school: 'THPT Lạng Giang số 1',
+    assignedClasses: ['all'],
+    pins: ['HOA_LG1_2026', '261099', '1099', '202610']
   },
   'smilers.thp@gmail.com': {
     name: 'Cô Trần Thị Ngà',
     role: 'Giáo viên phụ trách môn Tin học 10',
     school: 'THPT Lạng Giang số 1',
     assignedClasses: ['all'],
-    pins: ['NGA_LG1_2026', '261088', '1088']
-  },
-  'nguyentrunghoa@gmail.com': {
-    name: 'Thầy Nguyễn Trung Hòa',
-    role: 'Giáo viên cố vấn Tin học',
-    school: 'THPT Lạng Giang số 1',
-    assignedClasses: ['10A1'],
-    pins: ['HOA_LG1_2026', '261099', '1099']
+    pins: ['NGA_LG1_2026', '261088', '1088', '202610']
   }
 };
 
@@ -83,6 +89,8 @@ export const VALID_TEACHER_PINS = [
   'GV_LG1_2026',  // Mã PIN Master
   'NGA_LG1_2026', // Mã riêng Cô Ngà
   '261088',       // Mã số nhanh Cô Ngà
+  '1088',         // Mã số rút gọn Cô Ngà
+  '202610',       // Mã số dự phòng năm học 2026-2027
   'HOA_LG1_2026', // Mã riêng Thầy Hòa
   '261099'        // Mã số nhanh Thầy Hòa
 ];
