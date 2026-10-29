@@ -70,14 +70,14 @@ export default function TeacherDashboard({ isOpen, onClose }) {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-black tracking-tight">
-                  Bảng Điều Khiển Sư Phạm & Theo Dõi Học Tập
+                  Bảng điều khiển sư phạm & theo dõi học tập
                 </h2>
                 <span className="bg-yellow-400 text-yellow-950 font-extrabold text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  Dành cho Giáo viên
+                  Dành cho giáo viên
                 </span>
               </div>
               <p className="text-xs text-white/80 mt-0.5">
-                Bản quyền THPT Lạng Giang số 1 — Hệ thống Giám sát & Minh chứng Thực nghiệm NCKH
+                THPT Lạng Giang số 1 — Hệ thống giám sát & minh chứng thực nghiệm NCKH
               </p>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function TeacherDashboard({ isOpen, onClose }) {
 
         {/* Thanh công cụ Bộ Lọc Lớp và Tìm kiếm */}
         <div className="p-4 bg-white border-b border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
-          {/* Lọc theo lớp 10A1 - 10A9 */}
+          {/* Lọc theo lớp 10A1 - 10D4 */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Filter size={16} className="text-gray-400" />
             <span className="text-xs font-bold text-gray-700">Lớp:</span>
@@ -135,7 +135,7 @@ export default function TeacherDashboard({ isOpen, onClose }) {
               onChange={(e) => setSelectedClass(e.target.value)}
               className="bg-gray-50 border border-gray-300 text-gray-700 text-xs rounded-xl px-3 py-2 font-bold focus:ring-2 focus:ring-primary-500 outline-none"
             >
-              <option value="all">Tất cả các lớp (10A1 - 10A9)</option>
+              <option value="all">Tất cả các lớp (10 lớp: 10A1 - 10D4)</option>
               {SCHOOL_CLASSES.map(cls => (
                 <option key={cls} value={cls}>Lớp {cls}</option>
               ))}

@@ -173,7 +173,7 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-black flex items-center gap-2 tracking-tight">
-                Nhật Ký Học Tập & Sổ Tay Săn Bug
+                Nhật ký học tập & Sổ tay săn bug
               </h2>
               <p className="text-xs text-white/90 font-medium">
                 Học sinh: <b className="text-white underline underline-offset-2">{currentUser?.displayName || 'Học sinh'}</b> • Lớp: <b>{userClass || '10A1'}</b>
@@ -231,7 +231,7 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
             }`}
           >
             <Bug size={16} />
-            <span>Sổ Tay Săn Bug ({logs.length})</span>
+            <span>Sổ tay săn bug ({logs.length})</span>
           </button>
 
           <button
@@ -243,7 +243,7 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
             }`}
           >
             <MessageSquare size={16} />
-            <span>Lịch Sử Đàm Thoại Socrates</span>
+            <span>Lịch sử đàm thoại Socrates</span>
           </button>
 
           <button
@@ -255,7 +255,7 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
             }`}
           >
             <BookOpen size={16} />
-            <span>Bản Đồ 17 Bài Học ({completedCount}/17)</span>
+            <span>Bản đồ 17 bài học ({completedCount}/17)</span>
           </button>
         </div>
 

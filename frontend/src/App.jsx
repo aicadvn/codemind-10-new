@@ -109,7 +109,7 @@ function MainApp() {
       {/* Modal Hướng Dẫn Sử Dụng */}
       <InstructionModal isOpen={isInstructionOpen} onClose={() => setIsInstructionOpen(false)} />
 
-      {/* Modal Onboarding Chọn Lớp 10A1-10A9 cho Học sinh mới */}
+      {/* Modal Onboarding Chọn Lớp 10A1 - 10D4 cho Học sinh mới */}
       <ClassSelectModal isOpen={needsClassSelection} />
 
       {/* Modal Sổ Tay Săn Bug Cá Nhân cho Học Sinh */}

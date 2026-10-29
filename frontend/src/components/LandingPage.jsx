@@ -50,31 +50,31 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
             {/* Logo & Tên dự án */}
             <div 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
-              className="flex items-center gap-3 cursor-pointer group"
+              className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group min-w-0"
             >
-              <div className="relative">
+              <div className="relative shrink-0">
                 <img 
                   src={logoImg} 
                   alt="Logo THPT Lạng Giang số 1" 
-                  className="w-11 h-11 sm:w-13 sm:h-13 rounded-full object-contain border-2 border-cyan-400/80 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform duration-300"
+                  className="w-10 h-10 sm:w-13 sm:h-13 rounded-full object-contain border-2 border-cyan-400/80 shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform duration-300"
                 />
-                <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5">
+                <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 sm:h-3.5 sm:w-3.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-slate-950"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 sm:h-3.5 sm:w-3.5 bg-emerald-500 border-2 border-slate-950"></span>
                 </span>
               </div>
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="text-lg sm:text-2xl font-black tracking-tight whitespace-nowrap bg-gradient-to-r from-white via-cyan-200 to-cyan-400 bg-clip-text text-transparent leading-normal py-0.5">
                     CodeMind 10
                   </span>
-                  <span className="text-[10px] uppercase font-extrabold tracking-widest px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                  <span className="hidden sm:inline-flex text-[10px] uppercase font-extrabold tracking-widest px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
                     AI Socratic
                   </span>
                 </div>
-                <p className="text-[11px] sm:text-xs text-slate-400 font-medium tracking-wide">
-                  THPT Lạng Giang số 1 • Tỉnh Bắc Ninh
+                <p className="text-[10px] sm:text-xs text-slate-400 font-medium tracking-wide truncate max-w-[170px] xs:max-w-[220px] sm:max-w-none">
+                  THPT Lạng Giang số 1 • Thành phố Bắc Ninh
                 </p>
               </div>
             </div>
@@ -213,15 +213,15 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
 
               {/* Tiêu đề Khủng (Headline) */}
               <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12]">
-                Hệ Thống Gia Sư AI Socratic <br />
+                Hệ thống Gia sư AI Socratic <br />
                 <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
-                  Đột Phá Lập Trình Python 10
+                  Đột phá lập trình Python 10
                 </span>
               </h1>
 
               {/* Phụ đề mô tả chuyên sâu sư phạm */}
               <p className="text-sm sm:text-base lg:text-lg text-slate-300 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Giải pháp chuyển đổi số giáo dục tiên tiến: Gia sư AI phản hồi Socratic gợi mở tư duy (không chép giải), trình biên dịch Python chạy ngay trên Web, tự động lưu vết lỗi vào <b>Sổ tay Săn Bug</b> và đồng bộ dữ liệu đám mây cho <b>9 lớp khối 10</b> trường THPT Lạng Giang số 1.
+                Giải pháp chuyển đổi số giáo dục tiên tiến: Gia sư AI phản hồi Socratic gợi mở tư duy (không chép giải), trình biên dịch Python chạy ngay trên Web, tự động lưu vết lỗi vào <b>Sổ tay Săn Bug</b> và đồng bộ dữ liệu đám mây cho <b>10 lớp khối 10</b> trường THPT Lạng Giang số 1.
               </p>
 
               {/* Nhóm Nút Hành Động (CTA Buttons) */}
@@ -231,7 +231,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                   className="w-full sm:w-auto bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-slate-950 font-black text-sm sm:text-base px-8 py-4 rounded-2xl shadow-xl shadow-cyan-500/30 hover:shadow-cyan-500/50 transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3 group"
                 >
                   <LogIn size={20} className="group-hover:translate-x-0.5 transition-transform" />
-                  <span>Vào Lớp Học / Đăng Nhập Ngay</span>
+                  <span>Vào lớp học / Đăng nhập ngay</span>
                   <ArrowRight size={18} />
                 </button>
 
@@ -240,7 +240,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                   className="w-full sm:w-auto bg-slate-900/80 hover:bg-slate-800 text-white font-bold text-sm sm:text-base px-6 py-4 rounded-2xl border border-slate-700/80 hover:border-cyan-500/50 transition-all flex items-center justify-center gap-2.5 backdrop-blur-sm"
                 >
                   <BookOpen size={19} className="text-cyan-400" />
-                  <span>Xem Hướng Dẫn Sử Dụng</span>
+                  <span>Xem hướng dẫn sử dụng</span>
                 </button>
               </div>
 
@@ -248,7 +248,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
               <div className="pt-3 flex flex-wrap items-center justify-center lg:justify-start gap-3 text-xs text-slate-400">
                 <div className="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
                   <GraduationCap size={15} className="text-emerald-400" />
-                  <span>Tác giả: <b>Cô Trần Thị Ngà</b> (GV Tin học)</span>
+                  <span>GV hướng dẫn: <b>Cô Trần Thị Ngà</b></span>
                 </div>
               </div>
 
@@ -322,11 +322,11 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                   </div>
                   <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800">
                     <Cloud size={16} className="text-emerald-400 mx-auto mb-1" />
-                    <span className="text-[10px] text-slate-400 block font-semibold">Lưu trữ Mây</span>
+                    <span className="text-[10px] text-slate-400 block font-semibold">Lưu trữ đám mây</span>
                   </div>
                   <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800">
                     <Bug size={16} className="text-amber-400 mx-auto mb-1" />
-                    <span className="text-[10px] text-slate-400 block font-semibold">Săn Bug 24/7</span>
+                    <span className="text-[10px] text-slate-400 block font-semibold">Săn bug 24/7</span>
                   </div>
                 </div>
 
@@ -341,25 +341,25 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
             
             <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-slate-800 hover:border-cyan-500/40 transition-all text-center group">
               <div className="text-3xl sm:text-4xl font-black text-cyan-400 group-hover:scale-105 transition-transform">17</div>
-              <div className="text-xs sm:text-sm font-bold text-white mt-1">Bài Học SGK Chuẩn Hóa</div>
+              <div className="text-xs sm:text-sm font-bold text-white mt-1">Bài học SGK chuẩn hóa</div>
               <p className="text-[11px] text-slate-400 mt-0.5">Chương trình Tin học 10 mới</p>
             </div>
 
             <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-slate-800 hover:border-emerald-500/40 transition-all text-center group">
-              <div className="text-3xl sm:text-4xl font-black text-emerald-400 group-hover:scale-105 transition-transform">9</div>
-              <div className="text-xs sm:text-sm font-bold text-white mt-1">Lớp Khối 10</div>
-              <p className="text-[11px] text-slate-400 mt-0.5">Từ 10A1 đến 10A9 thực nghiệm</p>
+              <div className="text-3xl sm:text-4xl font-black text-emerald-400 group-hover:scale-105 transition-transform">10</div>
+              <div className="text-xs sm:text-sm font-bold text-white mt-1">Lớp khối 10</div>
+              <p className="text-[11px] text-slate-400 mt-0.5">Từ 10A1 đến 10D4 thực nghiệm</p>
             </div>
 
             <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-slate-800 hover:border-teal-500/40 transition-all text-center group">
               <div className="text-3xl sm:text-4xl font-black text-teal-400 group-hover:scale-105 transition-transform">100%</div>
-              <div className="text-xs sm:text-sm font-bold text-white mt-1">Săn Bug & Phân Loại Lỗi</div>
+              <div className="text-xs sm:text-sm font-bold text-white mt-1">Săn bug & phân loại lỗi</div>
               <p className="text-[11px] text-slate-400 mt-0.5">Nhận diện Syntax, Indentation,...</p>
             </div>
 
             <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-5 border border-slate-800 hover:border-indigo-500/40 transition-all text-center group">
               <div className="text-3xl sm:text-4xl font-black text-indigo-400 group-hover:scale-105 transition-transform">24/7</div>
-              <div className="text-xs sm:text-sm font-bold text-white mt-1">Học Tập Liền Mạch</div>
+              <div className="text-xs sm:text-sm font-bold text-white mt-1">Học tập liền mạch</div>
               <p className="text-[11px] text-slate-400 mt-0.5">Đồng bộ máy trường & điện thoại</p>
             </div>
 
@@ -376,10 +376,10 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
           
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-3">
             <span className="text-xs uppercase font-extrabold tracking-widest text-cyan-400 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-              Đổi Mới Phương Pháp Sư Phạm
+              Đổi mới phương pháp sư phạm
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-              Giới thiệu về CODE MIND 10
+              Giới thiệu về CodeMind 10
             </h2>
             <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
               CodeMind 10 không chỉ là phần mềm dạy học thông thường, mà là một hệ sinh thái sư phạm số toàn diện được xây dựng nhằm giải quyết triệt để các rào cản khi học sinh lớp 10 tiếp cận môn Lập trình Python theo Chương trình GDPT 2018.
@@ -395,7 +395,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-5">
                   <Bot size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">1. Vấn Đáp Socratic Không Giải Hộ</h3>
+                <h3 className="text-lg font-bold text-white mb-2">1. Vấn đáp Socratic không giải hộ</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Thay vì cung cấp code giải sẵn khiến học sinh thụ động, Gia sư AI đóng vai trò người thầy dẫn dắt, liên tục đặt câu hỏi gợi mở để học sinh tự tư duy, hiểu bản chất và tự tay viết code hoàn thiện.
                 </p>
@@ -414,7 +414,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 mb-5">
                   <Bug size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">2. Sổ Tay Săn Bug & Lời Khuyên Sư Phạm</h3>
+                <h3 className="text-lg font-bold text-white mb-2">2. Sổ tay săn bug & lời khuyên sư phạm</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Lưu trữ tự động từng lần gỡ lỗi với giao diện Accordion tương tác: xem lại chính xác đoạn code vi phạm, thông báo Traceback, sao chép code nhanh, lời khuyên định hướng của Cô Trần Thị Ngà và nút 1-Click mở bài trong Editor để sửa ngay.
                 </p>
@@ -433,7 +433,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-5">
                   <MessageSquare size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">3. Tra Cứu Đàm Thoại 17 Bài Học</h3>
+                <h3 className="text-lg font-bold text-white mb-2">3. Tra cứu đàm thoại 17 bài học</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Toàn bộ chuỗi hội thoại vấn đáp giữa học sinh và AI được lưu giữ toàn vẹn theo từng bài học (1 - 17). Học sinh có thể mở lại bất cứ lúc nào để ôn tập mạch tư duy logic hoặc bấm tiếp tục đàm thoại liền mạch.
                 </p>
@@ -452,7 +452,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-5">
                   <Layers size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">4. Bản Đồ 17 Bài Học & Thăng Hạng</h3>
+                <h3 className="text-lg font-bold text-white mb-2">4. Bản đồ 17 bài học & thăng hạng</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Theo dõi trực quan tiến độ 17 bài học chuẩn SGK với tích xanh hoàn thành. Hệ thống game hóa vinh danh học sinh qua 4 cấp bậc danh hiệu: Học viên Khởi động 🌱, Thợ săn Bug 🥈, Chuyên viên Thuật toán 🥇 và Chiến binh Python 🏆.
                 </p>
@@ -468,7 +468,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-5">
                   <Cloud size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">5. Học Liền Mạch & Dự Phòng Kép</h3>
+                <h3 className="text-lg font-bold text-white mb-2">5. Học liền mạch & dự phòng kép</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Tự động đồng bộ thời gian thực lên Cloud Firestore kết hợp bộ đệm cục bộ LocalStorage. Học sinh làm dở trên máy tính phòng máy nhà trường, khi về nhà mở điện thoại lên là làm tiếp đúng đoạn code đó, không sợ mất bài kể cả khi rớt mạng.
                 </p>
@@ -484,9 +484,9 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-5">
                   <BarChart3 size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">6. Dashboard Sư Phạm & Minh Chứng NCKH</h3>
+                <h3 className="text-lg font-bold text-white mb-2">6. Dashboard sư phạm & minh chứng NCKH</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Công cụ hỗ trợ quản trị đắc lực dành cho giáo viên: theo dõi tỷ lệ hoàn thành, thời gian học, số lỗi đã tự khắc phục của 9 lớp (10A1 đến 10A9) và trích xuất dữ liệu Excel (.CSV) 1-Click phục vụ nghiên cứu khoa học kỹ thuật và SKKN.
+                  Công cụ hỗ trợ quản trị đắc lực dành cho giáo viên: theo dõi tỷ lệ hoàn thành, thời gian học, số lỗi đã tự khắc phục của 10 lớp (10A1 đến 10D4) và trích xuất dữ liệu Excel (.CSV) 1-Click phục vụ nghiên cứu khoa học kỹ thuật và SKKN.
                 </p>
               </div>
               <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center gap-1.5 text-xs text-indigo-400 font-semibold">
@@ -506,11 +506,11 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                     <Award size={18} />
                   </span>
                   <span className="text-xs uppercase font-extrabold tracking-wider text-emerald-400">
-                    Trải Nghiệm Học Tập Tương Tác Mới
+                    Trải nghiệm học tập tương tác mới
                   </span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black text-white">
-                  Nhật Ký Học Tập & Sổ Tay Săn Bug — "Chiến Tích" Trưởng Thành Của Học Sinh
+                  Nhật ký học tập & Sổ tay săn bug — "Chiến tích" trưởng thành của học sinh
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                   Không còn cảm giác sợ sai khi gõ code Python! Mọi sự cố lập trình đều trở thành cơ hội rèn luyện tư duy phản biện. Học sinh có thể tra cứu lại toàn bộ lỗi đã vượt qua, xem lại code, đọc lời khuyên sư phạm của Cô Trần Thị Ngà và xem lại lịch sử vấn đáp với Gia sư AI.
@@ -523,13 +523,13 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                   className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-5 py-3 rounded-2xl text-xs sm:text-sm border border-slate-700 flex items-center justify-center gap-2 transition-all hover:bg-slate-750"
                 >
                   <BookOpen size={16} className="text-cyan-400" />
-                  Xem Cẩm Nang Hướng Dẫn
+                  Xem cẩm nang hướng dẫn
                 </button>
                 <button
                   onClick={onOpenLogin}
                   className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black px-6 py-3 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all transform hover:scale-105"
                 >
-                  <span>Trải Nghiệm Ngay</span>
+                  <span>Trải nghiệm ngay</span>
                   <ArrowRight size={16} />
                 </button>
               </div>
@@ -548,10 +548,10 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
           
           <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
             <span className="text-xs uppercase font-extrabold tracking-widest text-emerald-400 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              Chương Trình Chuẩn Hóa
+              Chương trình chuẩn hóa
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-              Lộ Trình 17 Bài Học Bám Sát SGK Tin Học 10
+              Lộ trình 17 bài học bám sát SGK Tin học 10
             </h2>
             <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
               Thiết kế theo ma trận kiến thức khoa học, đi từ làm quen cơ bản đến vận dụng giải quyết bài toán thuật toán thực tế.
@@ -568,7 +568,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 </span>
                 <span className="text-xs text-slate-500">Bài 1 — 5</span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Làm Quen & Khởi Động Với Python</h3>
+              <h3 className="text-lg font-bold text-white mb-2">Làm quen & khởi động với Python</h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-4">
                 Cài đặt môi trường, giao diện IDLE, các lệnh in màn hình cơ bản <code>print()</code>, phép toán số học và cú pháp khởi đầu.
               </p>
@@ -587,7 +587,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 </span>
                 <span className="text-xs text-slate-500">Bài 6 — 11</span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Biến, Kiểu Dữ Liệu & Rẽ Nhánh</h3>
+              <h3 className="text-lg font-bold text-white mb-2">Biến, kiểu dữ liệu & rẽ nhánh</h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-4">
                 Lệnh nhập xuất dữ liệu <code>input()</code>, các kiểu số nguyên, số thực, xâu ký tự và cấu trúc điều kiện <code>if - elif - else</code>.
               </p>
@@ -606,7 +606,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 </span>
                 <span className="text-xs text-slate-500">Bài 12 — 17</span>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Cấu Trúc Lặp, Hàm & Danh Sách</h3>
+              <h3 className="text-lg font-bold text-white mb-2">Cấu trúc lặp, hàm & danh sách</h3>
               <p className="text-xs text-slate-400 leading-relaxed mb-4">
                 Vòng lặp xác định <code>for</code>, vòng lặp không xác định <code>while</code>, định nghĩa hàm <code>def</code> và cấu trúc danh sách mảng <code>list</code>.
               </p>
@@ -629,7 +629,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
               onClick={onOpenLogin}
               className="bg-gradient-to-r from-cyan-500 to-emerald-400 hover:from-cyan-400 hover:to-emerald-300 text-slate-950 font-black px-8 py-3.5 rounded-full text-sm shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 transition-all transform hover:scale-105"
             >
-              Bắt Đầu Học Ngay (Miễn Phí 100%)
+              Bắt đầu học ngay (Miễn phí 100%)
             </button>
           </div>
 
@@ -652,7 +652,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 />
                 <div>
                   <h4 className="text-base font-black text-white">CodeMind 10 • THPT Lạng Giang số 1</h4>
-                  <p className="text-slate-400 text-[11px]">Hệ thống Gia sư AI Socratic Học Lập Trình Python</p>
+                  <p className="text-slate-400 text-[11px]">Hệ thống gia sư AI Socratic học lập trình Python</p>
                 </div>
               </div>
               <p className="text-slate-400 leading-relaxed text-[11px]">
@@ -662,8 +662,8 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
 
             <div className="md:col-span-4 space-y-2">
               <h5 className="text-sm font-bold text-white mb-2">Đơn vị & Tác giả</h5>
-              <p>🏛️ <b>Đơn vị:</b> Trường THPT Lạng Giang số 1 - Tỉnh Bắc Ninh</p>
-              <p>👩‍🏫 <b>Tác giả:</b> Giáo viên Trần Thị Ngà (Bộ môn Tin học)</p>
+              <p>🏛️ <b>Đơn vị:</b> Trường THPT Lạng Giang số 1 - Thành phố Bắc Ninh</p>
+              <p>👩‍🏫 <b>Hướng dẫn:</b> Giáo viên Trần Thị Ngà</p>
               <p>📍 <b>Địa chỉ:</b> Thôn Ao Luông, Xã Lạng Giang, Tỉnh Bắc Ninh</p>
             </div>
 
@@ -682,12 +682,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left text-[11px] text-slate-500">
             <div>
-              © 2026 - 2027 Bản quyền thuộc về <b>Giáo viên Trần Thị Ngà</b> • Trường THPT Lạng Giang số 1.
-            </div>
-            <div className="flex items-center gap-4">
-              <span>Hỗ trợ: smilers.thp@gmail.com</span>
-              <span>•</span>
-              <span>nguyentrunghoa@gmail.com</span>
+              © 2026 - 2027 • Trường THPT Lạng Giang số 1
             </div>
           </div>
 

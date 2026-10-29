@@ -24,20 +24,20 @@ export default function ClassSelectModal({ isOpen }) {
         </div>
 
         <h2 className="text-xl sm:text-2xl font-black text-gray-800 tracking-tight mb-1">
-          Chọn Lớp của bạn
+          Chọn lớp học của em
         </h2>
         <p className="text-xs sm:text-sm text-gray-500 mb-6 leading-relaxed">
-          Chào <b className="text-gray-700">{currentUser?.displayName || 'bạn'}</b>! Để Gia sư AI và Thầy/Cô đồng hành hỗ trợ bạn học tập tốt nhất, hãy chọn đúng lớp của bạn nhé:
+          Chào <b className="text-gray-700">{currentUser?.displayName || 'em'}</b>! Để Gia sư AI và Thầy/Cô đồng hành hỗ trợ em học tập tốt nhất, hãy chọn đúng lớp của mình nhé:
         </p>
 
-        {/* Lưới chọn 9 lớp từ 10A1 đến 10A9 */}
-        <div className="grid grid-cols-3 gap-2.5 mb-6">
+        {/* Lưới chọn 10 lớp từ 10A1 đến 10D4 */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 mb-6">
           {SCHOOL_CLASSES.map((cls) => (
             <button
               key={cls}
               type="button"
               onClick={() => setSelectedClass(cls)}
-              className={`py-3 px-2 rounded-xl text-sm font-bold transition-all border
+              className={`py-2.5 px-2 rounded-xl text-sm font-bold transition-all border
                 ${selectedClass === cls
                   ? 'bg-primary-600 text-white border-primary-600 shadow-md scale-105'
                   : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
@@ -55,7 +55,7 @@ export default function ClassSelectModal({ isOpen }) {
           className="w-full bg-primary-600 hover:bg-primary-500 text-white font-bold py-3.5 px-4 rounded-xl flex justify-center items-center gap-2 transition-all shadow-md hover:shadow-lg active:translate-y-0"
         >
           <CheckCircle2 size={18} />
-          Xác nhận và Vào Học
+          Xác nhận và vào học
         </button>
 
         <p className="mt-4 text-[11px] text-gray-400 italic">

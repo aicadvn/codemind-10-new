@@ -35,17 +35,18 @@ export const VALID_TEACHER_PINS = [
   '261099'        // Mã số nhanh Thầy Hòa
 ];
 
-// 3. Danh sách các lớp học khối 10 của nhà trường (10A1 đến 10A9)
+// 3. Danh sách các lớp học khối 10 của nhà trường (10 lớp: 10A1 đến 10D4)
 export const SCHOOL_CLASSES = [
   '10A1',
-  '10A2',
-  '10A3',
   '10A4',
   '10A5',
   '10A6',
   '10A7',
   '10A8',
-  '10A9'
+  '10D1',
+  '10D2',
+  '10D3',
+  '10D4'
 ];
 
 // 4. Danh sách 17 bài học bám sát SGK Tin học 10 (Chủ đề 5 - Lập trình giải quyết vấn đề với Python)

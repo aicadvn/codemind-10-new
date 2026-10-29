@@ -169,7 +169,7 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
             >
               <span className="flex items-center gap-1.5">
                 <KeyRound size={14} className="text-emerald-600" />
-                Vào nhanh bằng Mật mã lớp học (Dự phòng)
+                Vào nhanh bằng mật mã lớp học (Dự phòng)
               </span>
               {showPasscodeOption ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
@@ -177,7 +177,7 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
             {showPasscodeOption && (
               <form onSubmit={handlePasscodeSubmit} className="mt-3 space-y-3 animate-fade-in">
                 
-                {/* Chọn lớp (10A1 - 10A9) */}
+                {/* Chọn lớp (10A1 - 10D4) */}
                 <div>
                   <label className="block text-[11px] font-semibold text-gray-600 mb-1 flex items-center gap-1">
                     <School size={12} className="text-blue-600" /> Chọn lớp của em:
@@ -215,7 +215,7 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
                   {isLoadingPasscode ? (
                     <Loader2 className="animate-spin" size={15} />
                   ) : (
-                    'Vào Phòng Học Bằng Mã'
+                    'Vào phòng học bằng mã'
                   )}
                 </button>
               </form>
@@ -224,7 +224,7 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
         </div>
 
         <div className="mt-5 text-center text-[11px] text-gray-400 font-medium">
-          © 2026 Copyright by Giáo viên Trần Thị Ngà
+          © 2026 - 2027 • Trường THPT Lạng Giang số 1
         </div>
       </div>
     </div>

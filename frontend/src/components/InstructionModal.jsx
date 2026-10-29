@@ -38,10 +38,10 @@ export default function InstructionModal({ isOpen, onClose }) {
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-black tracking-tight flex items-center gap-2">
-                Cẩm Nang Hướng Dẫn Sử Dụng CodeMind 10
+                Cẩm nang hướng dẫn sử dụng CodeMind 10
               </h2>
               <p className="text-xs text-white/90">
-                Chương trình Tin học 10 • Trường THPT Lạng Giang số 1 • Tác giả: Cô Trần Thị Ngà
+                Chương trình Tin học 10 • Trường THPT Lạng Giang số 1 • GV hướng dẫn: Cô Trần Thị Ngà
               </p>
             </div>
           </div>
@@ -74,7 +74,7 @@ export default function InstructionModal({ isOpen, onClose }) {
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
             }`}
           >
-            ⭐ Sổ Tay Săn Bug & Lịch Sử Đàm Thoại (Mới)
+            ⭐ Sổ tay săn bug & lịch sử đàm thoại (mới)
           </button>
           <button
             onClick={() => setActiveCategory('student')}
@@ -84,7 +84,7 @@ export default function InstructionModal({ isOpen, onClose }) {
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
             }`}
           >
-            Học tập & Soạn thảo Code
+            Học tập & soạn thảo code
           </button>
           <button
             onClick={() => setActiveCategory('teacher')}
@@ -94,7 +94,7 @@ export default function InstructionModal({ isOpen, onClose }) {
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
             }`}
           >
-            Dành cho Giáo viên (Dashboard 9 Lớp)
+            Dành cho giáo viên (Dashboard 10 lớp)
           </button>
         </div>
 
@@ -109,7 +109,7 @@ export default function InstructionModal({ isOpen, onClose }) {
               </div>
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-base text-slate-900">1. Học Cùng Gia Sư AI Socrates</h3>
+                  <h3 className="font-bold text-base text-slate-900">1. Học cùng Gia sư AI Socrates</h3>
                   <span className="text-[10px] bg-cyan-100 text-cyan-800 font-extrabold px-2 py-0.5 rounded-full">Phương pháp cốt lõi</span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -129,14 +129,14 @@ export default function InstructionModal({ isOpen, onClose }) {
                 <Code size={20} />
               </div>
               <div className="space-y-2">
-                <h3 className="font-bold text-base text-slate-900">2. Trình Soạn Thảo Python & Chạy Thử Trực Tuyến</h3>
+                <h3 className="font-bold text-base text-slate-900">2. Trình soạn thảo Python & chạy thử trực tuyến</h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                   Khu vực bên phải là <b>Trình soạn thảo Python chuẩn công nghiệp</b> (chạy trực tiếp trên trình duyệt bằng công nghệ WebAssembly Pyodide).
                 </p>
                 <ul className="text-xs sm:text-sm text-slate-600 space-y-1.5 pl-1">
                   <li className="flex items-center gap-2">
                     <Play size={14} className="text-emerald-600 fill-emerald-600 shrink-0" />
-                    <span>Bấm nút <b>"Chạy Thử"</b> để thực thi chương trình và xem kết quả tại khung Console màu đen.</span>
+                    <span>Bấm nút <b>"Chạy thử"</b> để thực thi chương trình và xem kết quả tại khung Console màu đen.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
@@ -158,7 +158,7 @@ export default function InstructionModal({ isOpen, onClose }) {
                 <Bug size={20} />
               </div>
               <div className="space-y-1.5">
-                <h3 className="font-bold text-base text-slate-900">3. Nút Săn Bug (AI) — Trợ Thủ Bắt Mạch Sự Cố</h3>
+                <h3 className="font-bold text-base text-slate-900">3. Nút Săn bug (AI) — Trợ thủ bắt mạch sự cố</h3>
                 <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                   Khi chương trình chạy báo lỗi đỏ tại Console, bạn không cần chép lỗi thủ công:
                 </p>
@@ -178,7 +178,7 @@ export default function InstructionModal({ isOpen, onClose }) {
               <div className="space-y-2.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-bold text-base text-slate-900">
-                    4. Sổ Tay Săn Bug Tương Tác & Ôn Tập Đoạn Code Lỗi
+                    4. Sổ tay săn bug tương tác & ôn tập đoạn code lỗi
                   </h3>
                   <span className="text-[10px] bg-orange-500 text-white font-black px-2 py-0.5 rounded-full uppercase">Tính năng mới</span>
                 </div>
@@ -212,7 +212,7 @@ export default function InstructionModal({ isOpen, onClose }) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-bold text-base text-slate-900">
-                    5. Tra Cứu Lịch Sử Đàm Thoại Socrates Theo 17 Bài Học
+                    5. Tra cứu lịch sử đàm thoại Socrates theo 17 bài học
                   </h3>
                   <span className="text-[10px] bg-cyan-600 text-white font-black px-2 py-0.5 rounded-full uppercase">Tính năng mới</span>
                 </div>
@@ -242,7 +242,7 @@ export default function InstructionModal({ isOpen, onClose }) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-bold text-base text-slate-900">
-                    6. Bản Đồ 17 Bài Học & Hệ Thống Huy Hiệu Năng Lực (Gamification)
+                    6. Bản đồ 17 bài học & hệ thống huy hiệu năng lực (Gamification)
                   </h3>
                   <span className="text-[10px] bg-teal-600 text-white font-black px-2 py-0.5 rounded-full uppercase">Chủ đề F SGK</span>
                 </div>
@@ -283,17 +283,17 @@ export default function InstructionModal({ isOpen, onClose }) {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-bold text-base text-slate-900">
-                    7. Dành Cho Giáo Viên — Bảng Điều Khiển Sư Phạm & Dữ Liệu NCKH
+                    7. Dành cho giáo viên — Bảng điều khiển sư phạm & dữ liệu NCKH
                   </h3>
                   <span className="text-[10px] bg-indigo-600 text-white font-black px-2 py-0.5 rounded-full uppercase">Quản trị sư phạm</span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                  Khi đăng nhập bằng tài khoản Giáo viên được cấp quyền (hoặc nhập mã PIN bảo mật), giao diện sẽ hiển thị nút <b>"Bảng Điều Khiển Sư Phạm (9 Lớp)"</b>:
+                  Khi đăng nhập bằng tài khoản Giáo viên được cấp quyền (hoặc nhập mã PIN bảo mật), giao diện sẽ hiển thị nút <b>"Bảng điều khiển sư phạm (10 lớp)"</b>:
                 </p>
                 <ul className="text-xs sm:text-sm text-slate-600 space-y-1.5 pl-1">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 size={14} className="text-indigo-600 mt-0.5 shrink-0" />
-                    <span><b>Giám sát thời gian thực:</b> Theo dõi quy mô học sinh, tỷ lệ hoàn thành bài học và số lượng lỗi lập trình học sinh đã tự khắc phục phân theo từng lớp từ 10A1 đến 10A9.</span>
+                    <span><b>Giám sát thời gian thực:</b> Theo dõi quy mô học sinh, tỷ lệ hoàn thành bài học và số lượng lỗi lập trình học sinh đã tự khắc phục phân theo từng lớp từ 10A1 đến 10D4.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 size={14} className="text-indigo-600 mt-0.5 shrink-0" />
@@ -313,7 +313,7 @@ export default function InstructionModal({ isOpen, onClose }) {
         {/* Footer Modal */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
           <span className="text-xs text-slate-400 font-medium hidden sm:inline">
-            © 2026 CodeMind 10 • THPT Lạng Giang số 1 • Tỉnh Bắc Ninh
+            © 2026 - 2027 • Trường THPT Lạng Giang số 1 • Thành phố Bắc Ninh
           </span>
           <button 
             onClick={onClose}

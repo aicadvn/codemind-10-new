@@ -180,7 +180,7 @@ export default function Sidebar({
               className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow text-xs"
             >
               <BarChart3 size={15} />
-              Bảng Điều Khiển Sư Phạm (9 Lớp)
+              Bảng điều khiển sư phạm (10 lớp)
             </button>
             <button
               onClick={onOpenDiary}
@@ -302,7 +302,7 @@ export default function Sidebar({
         )}
 
         <div className="text-center text-[10px] text-gray-400 font-medium">
-          © Copyright by Giáo viên Trần Thị Ngà
+          © 2026 - 2027 • Trường THPT Lạng Giang số 1
         </div>
       </div>
 
@@ -311,7 +311,7 @@ export default function Sidebar({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl p-5 max-w-sm w-full shadow-2xl border border-gray-200 text-center animate-scale-up">
             <ShieldCheck size={36} className="text-primary-600 mx-auto mb-2" />
-            <h3 className="font-bold text-gray-800 text-base mb-1">Kích hoạt Quyền Giáo viên</h3>
+            <h3 className="font-bold text-gray-800 text-base mb-1">Kích hoạt quyền giáo viên</h3>
             <p className="text-xs text-gray-500 mb-4">Nhập mã PIN bảo mật do Ban Giảng Dạy cấp:</p>
 
             <form onSubmit={handleVerifyPin} className="space-y-3">
@@ -319,7 +319,7 @@ export default function Sidebar({
                 type="password"
                 value={pinInput}
                 onChange={(e) => setPinInput(e.target.value)}
-                placeholder="Nhập mã PIN Giáo viên..."
+                placeholder="Nhập mã PIN giáo viên..."
                 className="w-full p-2.5 border border-gray-300 rounded-xl text-center font-mono text-sm tracking-widest focus:ring-2 focus:ring-primary-500 outline-none"
               />
 
