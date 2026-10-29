@@ -13,6 +13,7 @@ import {
   KeyRound
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import logoImg from '../assets/Logo_moi_35b82.jpg';
 
 const LESSONS = [
   { id: 1, title: "Ngôn ngữ lập trình bậc cao và Python", desc: "Làm quen với Python, môi trường lập trình và cách Python hoạt động.", topic: "Mở đầu" },
@@ -106,14 +107,20 @@ export default function Sidebar({
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Header thương hiệu */}
-      <div className="p-4 border-b border-gray-200 bg-primary-50 px-5">
-        <h1 className="text-2xl font-black flex items-center gap-2 text-primary-800 tracking-tight">
-          <Book className="text-primary-600" size={24} /> 
-          CodeMind 10
-        </h1>
-        <p className="text-[11px] text-primary-600/80 mt-1 mb-1 italic leading-tight font-medium">
-          Gia sư Tin học AI - Bản quyền THPT Lạng Giang số 1
-        </p>
+      <div className="p-3.5 border-b border-gray-200 bg-primary-50 px-4 flex items-center gap-2.5">
+        <img 
+          src={logoImg} 
+          alt="Logo THPT Lạng Giang số 1" 
+          className="w-10 h-10 rounded-full border-2 border-primary-300 shadow-sm object-contain shrink-0" 
+        />
+        <div className="overflow-hidden">
+          <h1 className="text-lg font-black text-primary-800 tracking-tight leading-tight">
+            CodeMind 10
+          </h1>
+          <p className="text-[10px] text-primary-700/80 truncate font-medium">
+            THPT Lạng Giang số 1
+          </p>
+        </div>
       </div>
 
       {/* Thẻ thông tin học sinh / Giáo viên */}

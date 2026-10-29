@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Chatbot from './components/Chatbot';
 import EditorPane from './components/EditorPane';
 import Login from './components/Login';
+import LandingPage from './components/LandingPage';
 import InstructionModal from './components/InstructionModal';
 import ClassSelectModal from './components/ClassSelectModal';
 import TeacherDashboard from './components/TeacherDashboard';
@@ -18,6 +19,7 @@ function MainApp() {
   const [isInstructionOpen, setIsInstructionOpen] = useState(false);
   const [isDiaryOpen, setIsDiaryOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const handleLessonSelect = (lesson) => {
     setActiveLesson(lesson);
@@ -34,8 +36,24 @@ function MainApp() {
     }
   };
 
+  // Nếu chưa đăng nhập: Hiển thị Trang chủ Landing Page hoành tráng toàn màn hình
   if (!currentUser) {
-    return <Login />;
+    return (
+      <>
+        <LandingPage 
+          onOpenLogin={() => setIsLoginModalOpen(true)} 
+          onOpenInstruction={() => setIsInstructionOpen(true)} 
+        />
+        <Login 
+          isOpen={isLoginModalOpen} 
+          onClose={() => setIsLoginModalOpen(false)} 
+        />
+        <InstructionModal 
+          isOpen={isInstructionOpen} 
+          onClose={() => setIsInstructionOpen(false)} 
+        />
+      </>
+    );
   }
 
   return (
