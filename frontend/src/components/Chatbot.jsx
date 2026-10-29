@@ -4,6 +4,21 @@ import { Send, Bot, User, Loader2, Sparkles, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { saveSocraticChat, loadSocraticChat } from '../services/analyticsService';
 
+// Hàm khử ký tự LaTeX Dollar thừa ($ hoặc $$) để công thức toán tự nhiên và không gây hiểu lầm cho học sinh
+export const cleanLatexMath = (text) => {
+  if (!text || typeof text !== 'string') return text || '';
+  return text
+    // 1. Khử công thức block $$...$$
+    .replace(/\$\$([\s\S]*?)\$\$/g, '$1')
+    // 2. Khử công thức inline $...$ (bỏ qua số tiền $50, $100...)
+    .replace(/\$([^\$\n]+?)\$/g, (match, formula) => {
+      if (/^\s*\d+([.,]\d+)?\s*$/.test(formula)) {
+        return match;
+      }
+      return formula.trim();
+    });
+};
+
 export default function Chatbot({ activeLesson, errorToAnalyze }) {
   const { currentUser } = useAuth();
   const [messages, setMessages] = useState([]);
@@ -114,7 +129,7 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
       
       let finalMessages = [...chatHistory];
       if (data.reply) {
-        finalMessages.push({ role: 'CodeMind', text: data.reply });
+        finalMessages.push({ role: 'CodeMind', text: cleanLatexMath(data.reply) });
       } else {
         finalMessages.push({ role: 'CodeMind', text: 'Xin lỗi, hệ thống AI đang bận. Bạn hãy thử lại sau nhé!' });
       }
@@ -190,7 +205,7 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
                   : 'bg-white border border-gray-100 text-gray-800 text-[14px] leading-relaxed rounded-tl-none'}
               `}
             >
-              <ReactMarkdown>{msg.text}</ReactMarkdown>
+              <ReactMarkdown>{cleanLatexMath(msg.text)}</ReactMarkdown>
             </div>
 
             {msg.role === 'user' && (
