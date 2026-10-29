@@ -664,7 +664,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
               <h5 className="text-sm font-bold text-white mb-2">Đơn vị & Tác giả</h5>
               <p>🏛️ <b>Đơn vị:</b> Trường THPT Lạng Giang số 1 - Thành phố Bắc Ninh</p>
               <p>👩‍🏫 <b>Hướng dẫn:</b> Giáo viên Trần Thị Ngà</p>
-              <p>📍 <b>Địa chỉ:</b> Thôn Ao Luông, Xã Lạng Giang, Tỉnh Bắc Ninh</p>
+              <p>📍 <b>Địa chỉ:</b> Thôn Yên Mỹ 1 - Phường Lạng Giang - Thành phố Bắc Ninh</p>
             </div>
 
             <div className="md:col-span-3 space-y-2">
