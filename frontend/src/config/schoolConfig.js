@@ -5,7 +5,8 @@
 export const TEACHER_EMAILS = [
   'smilers.thp@gmail.com',    // Cô Trần Thị Ngà - GV Tin học THPT Lạng Giang số 1
   'tranthingalg1@gmail.com',  // Cô Trần Thị Ngà - GV Tin học THPT Lạng Giang số 1
-  'nguyentrunghoa@gmail.com'  // Thầy Nguyễn Trung Hòa
+  'nguyentrunghoa@gmail.com', // Thầy Nguyễn Trung Hòa
+  'ngtrunghoa279@gmail.com'   // Thầy Nguyễn Trung Hòa
 ].map(email => email.toLowerCase().trim());
 
 // 2. Chi tiết cấu hình Giáo viên và Mã PIN Bảo mật riêng
@@ -27,8 +28,38 @@ export const TEACHER_PROFILES = {
     role: 'Giáo viên cố vấn Tin học',
     school: 'THPT Lạng Giang số 1',
     pins: ['HOA_LG1_2026', '261099', '1099']
+  },
+  'ngtrunghoa279@gmail.com': {
+    name: 'Thầy Nguyễn Trung Hòa',
+    role: 'Giáo viên cố vấn Tin học',
+    school: 'THPT Lạng Giang số 1',
+    pins: ['HOA_LG1_2026', '261099', '1099']
   }
 };
+
+// Hàm tiện ích nhận diện tài khoản Giáo viên (dựa trên email whitelist, role hoặc lớp Ban Giảng Dạy)
+export function isTeacherAccount(userOrData) {
+  if (!userOrData) return false;
+  const email = (userOrData.email || '').toLowerCase().trim();
+  const role = (userOrData.role || '').toLowerCase().trim();
+  const className = (userOrData.className || '').toLowerCase().trim();
+
+  // 1. Kiểm tra role
+  if (role === 'teacher' || role === 'admin') return true;
+
+  // 2. Kiểm tra className giáo viên
+  if (
+    className === 'ban giảng dạy' || 
+    className === 'bangiangday' || 
+    className === 'giáo viên' || 
+    className === 'giao vien'
+  ) return true;
+
+  // 3. Kiểm tra danh sách whitelist email giáo viên
+  if (TEACHER_EMAILS.some(tEmail => tEmail.toLowerCase().trim() === email)) return true;
+
+  return false;
+}
 
 // Mã PIN Master chung của Ban Giảng Dạy
 export const TEACHER_PIN = 'GV_LG1_2026';

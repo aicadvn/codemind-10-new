@@ -70,36 +70,45 @@ export function AuthProvider({ children }) {
                 if (data.completedLessons) setCompletedLessons(data.completedLessons);
               }
 
+              // Nếu là giáo viên, role luôn là 'teacher' và className luôn là 'Ban Giảng Dạy'
+              const finalRole = (isEmailTeacher || initialRole === 'teacher') ? 'teacher' : 'student';
+              const finalClass = finalRole === 'teacher' ? 'Ban Giảng Dạy' : (savedClass || null);
+
               // Cập nhật Profile và thời điểm đăng nhập
               await setDoc(userRef, {
                 uid: user.uid,
                 email: user.email,
-                displayName: user.displayName || 'Học sinh THPT',
+                displayName: user.displayName || (finalRole === 'teacher' ? 'Giáo viên THPT' : 'Học sinh THPT'),
                 photoURL: user.photoURL,
-                role: initialRole,
-                className: savedClass || (initialRole === 'teacher' ? 'Ban Giảng Dạy' : null),
+                role: finalRole,
+                className: finalClass,
                 lastLogin: serverTimestamp(),
                 lastActive: serverTimestamp()
               }, { merge: true });
 
-              // Ghi nhận nhật ký phiên đăng nhập (Session Tracking NCKH)
-              logLoginSession(user.uid, {
-                displayName: user.displayName,
-                email: user.email,
-                className: savedClass
-              });
+              // Chỉ ghi nhận nhật ký phiên đăng nhập (Session Tracking NCKH) đối với HỌC SINH
+              if (finalRole !== 'teacher') {
+                logLoginSession(user.uid, {
+                  displayName: user.displayName,
+                  email: user.email,
+                  className: finalClass
+                });
+              }
 
             } catch (err) {
               console.warn('Lỗi đồng bộ hồ sơ lên Firestore:', err);
             }
           }
 
+          const resolvedRole = (isEmailTeacher || initialRole === 'teacher') ? 'teacher' : 'student';
+          const resolvedClass = resolvedRole === 'teacher' ? 'Ban Giảng Dạy' : savedClass;
+
           setCurrentUser(user);
-          setUserRole(initialRole);
-          setUserClass(savedClass);
+          setUserRole(resolvedRole);
+          setUserClass(resolvedClass);
 
           // Nếu là học sinh và chưa có lớp -> Bật cửa sổ chọn lớp Onboarding 1 lần đầu
-          if (initialRole === 'student' && !savedClass) {
+          if (resolvedRole === 'student' && !resolvedClass) {
             setNeedsClassSelection(true);
           } else {
             setNeedsClassSelection(false);

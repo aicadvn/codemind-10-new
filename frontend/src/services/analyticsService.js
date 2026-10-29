@@ -12,6 +12,7 @@ import {
   addDoc, 
   serverTimestamp 
 } from '../firebase';
+import { isTeacherAccount } from '../config/schoolConfig';
 
 // Phân loại lỗi lập trình Python thông minh
 export function parsePythonErrorType(errorMsg) {
@@ -245,13 +246,14 @@ export async function fetchClassStudents(classNameFilter = 'all') {
     const students = [];
     snap.forEach(docSnap => {
       const data = docSnap.data();
-      // Loại trừ các tài khoản giáo viên khỏi danh sách học sinh
-      if (data.role !== 'teacher') {
-        students.push({
-          id: docSnap.id,
-          ...data
-        });
+      // Loại trừ tuyệt đối mọi tài khoản giáo viên khỏi danh sách và thống kê học sinh
+      if (isTeacherAccount(data)) {
+        return;
       }
+      students.push({
+        id: docSnap.id,
+        ...data
+      });
     });
 
     return students;
@@ -263,7 +265,9 @@ export async function fetchClassStudents(classNameFilter = 'all') {
 
 // 7. Xuất dữ liệu minh chứng thực nghiệm định lượng phục vụ Nghiên cứu Khoa học (NCKH / SKKN)
 export function exportToNCKH_CSV(students, className = 'Toàn khối 10') {
-  if (!students || students.length === 0) {
+  // Đảm bảo chỉ có dữ liệu học sinh trong báo cáo NCKH, loại bỏ mọi tài khoản giáo viên
+  const validStudents = (students || []).filter(s => !isTeacherAccount(s));
+  if (validStudents.length === 0) {
     alert('Chưa có dữ liệu học sinh để xuất!');
     return;
   }
@@ -282,7 +286,7 @@ export function exportToNCKH_CSV(students, className = 'Toàn khối 10') {
     'Lần đăng nhập gần nhất'
   ];
 
-  const rows = students.map((s, idx) => {
+  const rows = validStudents.map((s, idx) => {
     const completedCount = (s.completedLessons || []).length;
     const progressPercent = Math.round((completedCount / 17) * 100);
     const lastLoginStr = s.lastLogin?.toDate 

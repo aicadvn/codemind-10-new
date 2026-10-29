@@ -12,7 +12,7 @@ import {
   Clock,
   Sparkles
 } from 'lucide-react';
-import { SCHOOL_CLASSES } from '../config/schoolConfig';
+import { SCHOOL_CLASSES, isTeacherAccount } from '../config/schoolConfig';
 import { fetchClassStudents, exportToNCKH_CSV } from '../services/analyticsService';
 
 export default function TeacherDashboard({ isOpen, onClose }) {
@@ -24,7 +24,8 @@ export default function TeacherDashboard({ isOpen, onClose }) {
   const loadData = async (className) => {
     setIsLoading(true);
     const data = await fetchClassStudents(className);
-    setStudents(data);
+    // Lọc bỏ triệt để tài khoản giáo viên (đảm bảo chỉ có dữ liệu học sinh)
+    setStudents((data || []).filter(s => !isTeacherAccount(s)));
     setIsLoading(false);
   };
 
@@ -36,8 +37,9 @@ export default function TeacherDashboard({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  // Lọc theo từ khóa tìm kiếm tên hoặc email
+  // Lọc theo từ khóa tìm kiếm tên hoặc email (tuyệt đối không hiển thị tài khoản giáo viên)
   const filteredStudents = students.filter(s => {
+    if (isTeacherAccount(s)) return false;
     const term = searchTerm.toLowerCase();
     const name = (s.displayName || '').toLowerCase();
     const email = (s.email || '').toLowerCase();
