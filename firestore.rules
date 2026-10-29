@@ -7,8 +7,7 @@ service cloud.firestore {
       return request.auth != null && 
         (request.auth.token.email == 'smilers.thp@gmail.com' || 
          request.auth.token.email == 'tranthingalg1@gmail.com' || 
-         request.auth.token.email == 'nguyentrunghoa@gmail.com' ||
-         request.auth.token.email == 'ngtrunghoa279@gmail.com');
+         request.auth.token.email == 'nguyentrunghoa@gmail.com');
     }
 
     // Kiểm tra học sinh chính chủ sở hữu tài liệu

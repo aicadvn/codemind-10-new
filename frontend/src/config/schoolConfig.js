@@ -5,8 +5,7 @@
 export const TEACHER_EMAILS = [
   'smilers.thp@gmail.com',    // Cô Trần Thị Ngà - GV Tin học THPT Lạng Giang số 1
   'tranthingalg1@gmail.com',  // Cô Trần Thị Ngà - GV Tin học THPT Lạng Giang số 1
-  'nguyentrunghoa@gmail.com', // Thầy Nguyễn Trung Hòa
-  'ngtrunghoa279@gmail.com'   // Thầy Nguyễn Trung Hòa
+  'nguyentrunghoa@gmail.com'  // Thầy Nguyễn Trung Hòa
 ].map(email => email.toLowerCase().trim());
 
 // 2. Chi tiết cấu hình Giáo viên và Mã PIN Bảo mật riêng
@@ -24,12 +23,6 @@ export const TEACHER_PROFILES = {
     pins: ['NGA_LG1_2026', '261088', '1088']
   },
   'nguyentrunghoa@gmail.com': {
-    name: 'Thầy Nguyễn Trung Hòa',
-    role: 'Giáo viên cố vấn Tin học',
-    school: 'THPT Lạng Giang số 1',
-    pins: ['HOA_LG1_2026', '261099', '1099']
-  },
-  'ngtrunghoa279@gmail.com': {
     name: 'Thầy Nguyễn Trung Hòa',
     role: 'Giáo viên cố vấn Tin học',
     school: 'THPT Lạng Giang số 1',
