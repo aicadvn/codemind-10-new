@@ -16,6 +16,7 @@ import {
   SUPER_ADMIN_EMAIL, 
   SUPER_ADMIN_EMAILS,
   isSuperAdmin,
+  isTeacherAccount,
   TEACHER_PROFILES, 
   TEACHER_EMAILS 
 } from '../config/schoolConfig';
@@ -223,30 +224,34 @@ export async function checkStudentAccessAllowed(email) {
   const normEmail = normalizeEmail(email);
   if (!normEmail) return { isAllowed: false, reason: 'no_email' };
 
-  // Nếu là tài khoản Super Admin hoặc Giáo viên đã Whitelist -> Luôn được phép
-  if (TEACHER_EMAILS.includes(normEmail)) {
+  // 1. Nếu là tài khoản Super Admin hoặc Giáo viên -> Luôn được phép
+  if (isSuperAdmin(normEmail) || TEACHER_EMAILS.includes(normEmail)) {
     return { isAllowed: true, isTeacher: true, className: 'Ban Giảng Dạy' };
   }
 
-  // Kiểm tra trong collection `registered_students`
+  // 2. Kiểm tra trong cơ sở dữ liệu Cloud Firestore
   if (db) {
     try {
       const docId = getStudentDocId(normEmail);
       const studentDocRef = doc(db, 'registered_students', docId);
       const docSnap = await getDoc(studentDocRef);
 
-      if (docSnap.exists() && docSnap.data().status !== 'suspended') {
+      if (docSnap.exists()) {
         const data = docSnap.data();
-        return { 
-          isAllowed: true, 
-          isTeacher: false, 
-          studentData: data,
-          className: data.className || '10A1',
-          fullName: data.fullName || data.displayName || 'Học sinh'
-        };
+        if (data.status !== 'suspended') {
+          return { 
+            isAllowed: true, 
+            isTeacher: false, 
+            studentData: data,
+            className: data.className || '10A1',
+            fullName: data.fullName || data.displayName || 'Học sinh'
+          };
+        } else {
+          return { isAllowed: false, reason: 'suspended', email: normEmail };
+        }
       }
 
-      // Query phụ phòng trường hợp docId cấu trúc khác
+      // Query phụ trong registered_students phòng trường hợp docId cấu trúc khác
       const q = query(collection(db, 'registered_students'), where('email', '==', normEmail));
       const querySnap = await getDocs(q);
       if (!querySnap.empty) {
@@ -258,6 +263,37 @@ export async function checkStudentAccessAllowed(email) {
             studentData: data,
             className: data.className || '10A1',
             fullName: data.fullName || data.displayName || 'Học sinh'
+          };
+        } else {
+          return { isAllowed: false, reason: 'suspended', email: normEmail };
+        }
+      }
+
+      // 3. Kiểm tra xem học sinh đã có tài khoản thực tế hợp lệ trong `users` hay không
+      // (Đối với các học sinh đã từng đăng nhập trước đó)
+      const uQ = query(collection(db, 'users'), where('email', '==', normEmail));
+      const uSnap = await getDocs(uQ);
+      if (!uSnap.empty) {
+        const uDoc = uSnap.docs[0];
+        const uData = uDoc.data();
+        if (uData.status !== 'suspended' && uData.role !== 'unregistered_student') {
+          // Tự động đồng bộ ngược vào registered_students để đảm bảo nhất quán
+          const studentPayload = {
+            email: normEmail,
+            fullName: uData.displayName || 'Học sinh THPT',
+            className: uData.className || '10A1',
+            status: 'active',
+            autoSynced: true,
+            updatedAt: serverTimestamp()
+          };
+          setDoc(studentDocRef, studentPayload, { merge: true }).catch(() => {});
+
+          return {
+            isAllowed: true,
+            isTeacher: false,
+            studentData: studentPayload,
+            className: uData.className || '10A1',
+            fullName: uData.displayName || 'Học sinh THPT'
           };
         }
       }
@@ -275,26 +311,114 @@ export async function checkStudentAccessAllowed(email) {
   };
 }
 
-// 5. LẤY TOÀN BỘ DANH SÁCH HỌC SINH ĐÃ NHẬP
+// 5. LẤY TOÀN BỘ DANH SÁCH HỌC SINH TÍCH HỢP ĐỒNG BỘ (REGISTERED + ACTIVE USERS)
 export async function fetchAllRegisteredStudents() {
   if (!db) return [];
   try {
+    const studentsMap = new Map();
+
+    // NGUỒN 1: Đọc từ collection `registered_students` (danh sách học sinh đã nhập bằng CSV / thủ công)
     const colRef = collection(db, 'registered_students');
     const snap = await getDocs(colRef);
-    const students = [];
     snap.forEach(d => {
-      students.push({
+      const data = d.data();
+      const normEmail = normalizeEmail(data.email || d.id);
+      studentsMap.set(normEmail, {
         id: d.id,
-        ...d.data()
+        ...data,
+        email: normEmail,
+        stt: data.stt || '',
+        fullName: data.fullName || data.displayName || 'Học sinh',
+        className: data.className || '10A1',
+        status: data.status || 'active',
+        isRegisteredFromCsv: true,
+        completedLessonsCount: 0,
+        totalBugs: 0,
+        isActivated: false
       });
     });
-    // Sắp xếp theo lớp rồi theo STT
-    return students.sort((a, b) => {
-      if (a.className !== b.className) return (a.className || '').localeCompare(b.className || '');
-      return (parseInt(a.stt, 10) || 0) - (parseInt(b.stt, 10) || 0);
+
+    // NGUỒN 2: Đọc từ collection `users` (những tài khoản học sinh đã đăng nhập và đang học)
+    // Đảm bảo không bị chênh lệch so với Bảng điều khiển sư phạm!
+    const usersCol = collection(db, 'users');
+    const usersSnap = await getDocs(usersCol);
+
+    usersSnap.forEach(d => {
+      const uData = d.data();
+      // Bỏ qua tài khoản giáo viên và tài khoản admin
+      if (isTeacherAccount(uData) || isSuperAdmin(uData.email)) {
+        return;
+      }
+
+      const normEmail = normalizeEmail(uData.email);
+      if (!normEmail) return;
+
+      const completedCount = Array.isArray(uData.completedLessons) ? uData.completedLessons.length : 0;
+      const bugsCount = uData.totalBugs || 0;
+      const lastActive = uData.lastActive || uData.lastLogin || null;
+
+      if (studentsMap.has(normEmail)) {
+        // Đã có trong registered_students -> Bổ sung dữ liệu học tập thực tế
+        const existing = studentsMap.get(normEmail);
+        studentsMap.set(normEmail, {
+          ...existing,
+          uid: d.id,
+          completedLessonsCount: completedCount,
+          completedLessons: uData.completedLessons || [],
+          totalBugs: bugsCount,
+          lastActive: lastActive,
+          photoURL: uData.photoURL || existing.photoURL,
+          isActivated: true, // Đã đăng nhập vào học
+          fullName: existing.fullName || uData.displayName || 'Học sinh'
+        });
+      } else {
+        // Chưa có trong registered_students nhưng ĐÃ CÓ trong users (như 4 học sinh hiện tại)
+        // -> Tự động đưa vào danh sách học sinh và đồng bộ ngược vào registered_students
+        const newStudentEntry = {
+          id: getStudentDocId(normEmail),
+          uid: d.id,
+          email: normEmail,
+          fullName: uData.displayName || 'Học sinh',
+          className: uData.className || '10A1',
+          status: uData.status === 'suspended' ? 'suspended' : 'active',
+          isActivated: true,
+          completedLessonsCount: completedCount,
+          completedLessons: uData.completedLessons || [],
+          totalBugs: bugsCount,
+          lastActive: lastActive,
+          photoURL: uData.photoURL,
+          autoSyncedFromUser: true
+        };
+        studentsMap.set(normEmail, newStudentEntry);
+
+        // Tự động đồng bộ lưu vào registered_students để đảm bảo tính liên tục
+        if (newStudentEntry.status === 'active') {
+          const docId = getStudentDocId(normEmail);
+          setDoc(doc(db, 'registered_students', docId), {
+            email: normEmail,
+            fullName: newStudentEntry.fullName,
+            className: newStudentEntry.className,
+            status: 'active',
+            autoSynced: true,
+            updatedAt: serverTimestamp()
+          }, { merge: true }).catch(err => console.warn('Lỗi auto-sync vào registered_students:', err));
+        }
+      }
     });
+
+    const studentList = Array.from(studentsMap.values());
+
+    // Sắp xếp theo lớp rồi theo STT / Tên
+    return studentList.sort((a, b) => {
+      if (a.className !== b.className) return (a.className || '').localeCompare(b.className || '');
+      const sttA = parseInt(a.stt, 10) || 999;
+      const sttB = parseInt(b.stt, 10) || 999;
+      if (sttA !== sttB) return sttA - sttB;
+      return (a.fullName || '').localeCompare(b.fullName || '');
+    });
+
   } catch (err) {
-    console.warn('Lỗi tải danh sách học sinh đăng ký:', err);
+    console.warn('Lỗi tải danh sách học sinh tích hợp:', err);
     return [];
   }
 }
@@ -329,8 +453,23 @@ export async function deleteStudentFromSystem(email) {
   const normEmail = normalizeEmail(email);
   const docId = getStudentDocId(normEmail);
 
+  // 1. Xóa khỏi collection `registered_students`
   const studentRef = doc(db, 'registered_students', docId);
   await deleteDoc(studentRef);
+
+  // 2. Cập nhật trong `users` để đánh dấu suspended
+  try {
+    const q = query(collection(db, 'users'), where('email', '==', normEmail));
+    const snap = await getDocs(q);
+    snap.forEach(userDoc => {
+      setDoc(userDoc.ref, { 
+        status: 'suspended', 
+        role: 'unregistered_student' 
+      }, { merge: true });
+    });
+  } catch (e) {
+    console.warn('Lỗi cập nhật users khi xóa học sinh:', e);
+  }
 
   return true;
 }

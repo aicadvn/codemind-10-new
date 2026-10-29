@@ -441,10 +441,15 @@ export default function AdminPortal({
                     onChange={(e) => setSelectedClassFilter(e.target.value)}
                     className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer"
                   >
-                    <option value="all">Tất cả (10 lớp)</option>
+                    <option value="all">Tất cả ({students.length} học sinh)</option>
                     {SCHOOL_CLASSES.map(cls => (
                       <option key={cls} value={cls}>Lớp {cls}</option>
                     ))}
+                    {Array.from(new Set(students.map(s => s.className)))
+                      .filter(cls => cls && !SCHOOL_CLASSES.includes(cls))
+                      .map(cls => (
+                        <option key={cls} value={cls}>Lớp {cls} (Cần chuyển lớp)</option>
+                      ))}
                   </select>
                 </div>
 
@@ -490,59 +495,109 @@ export default function AdminPortal({
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-600 font-extrabold uppercase tracking-wider text-[11px]">
-                        <th className="p-3 w-16 text-center">STT</th>
-                        <th className="p-3">Họ và tên</th>
-                        <th className="p-3">Email (Tài khoản Google)</th>
+                        <th className="p-3 w-14 text-center">STT</th>
+                        <th className="p-3">Học sinh</th>
+                        <th className="p-3">Email (Google Account)</th>
                         <th className="p-3">Lớp chính thức</th>
-                        <th className="p-3">Trạng thái quyền</th>
+                        <th className="p-3">Tiến độ bài học (Chủ đề 5)</th>
+                        <th className="p-3">Trạng thái</th>
                         <th className="p-3 text-right">Thao tác</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {filteredStudents.map((s, idx) => (
-                        <tr key={s.id || s.email} className="hover:bg-indigo-50/40 transition-colors">
-                          <td className="p-3 text-center font-bold text-slate-500">
-                            {s.stt || (idx + 1)}
-                          </td>
-                          <td className="p-3 font-bold text-slate-900">
-                            {s.fullName || s.displayName || 'Học sinh'}
-                          </td>
-                          <td className="p-3 font-mono text-slate-600 text-[11px]">
-                            {s.email}
-                          </td>
-                          <td className="p-3">
-                            <span className="bg-indigo-50 text-indigo-700 font-extrabold px-2.5 py-1 rounded-lg border border-indigo-200">
-                              Lớp {s.className || 'Chưa xếp lớp'}
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full text-[10px] border border-emerald-200">
-                              <CheckCircle2 size={11} /> Được phép học
-                            </span>
-                          </td>
-                          <td className="p-3 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <button
-                                onClick={() => {
-                                  setEditingStudent(s);
-                                  setNewClassForStudent(s.className || '10A1');
-                                }}
-                                className="p-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-lg transition-colors cursor-pointer"
-                                title="Điều chỉnh / Chuyển lớp cho học sinh"
-                              >
-                                <Edit3 size={14} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteStudent(s)}
-                                className="p-1.5 bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
-                                title="Xóa học sinh khỏi hệ thống"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredStudents.map((s, idx) => {
+                        const completedCount = s.completedLessonsCount || (Array.isArray(s.completedLessons) ? s.completedLessons.length : 0);
+                        const percent = Math.round((completedCount / 17) * 100);
+                        const bugsCount = s.totalBugs || 0;
+
+                        return (
+                          <tr key={s.id || s.email} className="hover:bg-indigo-50/40 transition-colors">
+                            <td className="p-3 text-center font-bold text-slate-500">
+                              {s.stt || (idx + 1)}
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center gap-2.5">
+                                {s.photoURL ? (
+                                  <img 
+                                    src={s.photoURL} 
+                                    alt={s.fullName} 
+                                    className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" 
+                                  />
+                                ) : (
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                                    {(s.fullName || s.displayName || 'H')[0].toUpperCase()}
+                                  </div>
+                                )}
+                                <div>
+                                  <div className="font-bold text-slate-900 leading-tight">
+                                    {s.fullName || s.displayName || 'Học sinh'}
+                                  </div>
+                                  <div className="text-[10px] text-slate-400 mt-0.5">
+                                    ID: {(s.id || '').slice(0, 14)}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-3 font-mono text-slate-600 text-[11px]">
+                              {s.email}
+                            </td>
+                            <td className="p-3">
+                              <span className="bg-indigo-50 text-indigo-700 font-extrabold px-2.5 py-1 rounded-lg border border-indigo-200 inline-block">
+                                Lớp {s.className || 'Chưa xếp lớp'}
+                              </span>
+                            </td>
+                            <td className="p-3 min-w-[170px]">
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between text-[11px]">
+                                  <span className="font-semibold text-slate-700">{completedCount}/17 bài</span>
+                                  <span className="font-bold text-indigo-600">{percent}%</span>
+                                </div>
+                                <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                  <div 
+                                    className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-300"
+                                    style={{ width: `${percent}%` }}
+                                  ></div>
+                                </div>
+                                <div className="text-[10px] text-orange-600 font-medium">
+                                  {bugsCount > 0 ? `Đã tự gỡ: ${bugsCount} lỗi (Bug)` : 'Chưa gặp lỗi'}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              {s.isActivated ? (
+                                <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full text-[10px] border border-emerald-200">
+                                  <CheckCircle2 size={11} /> Đã vào học
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full text-[10px] border border-blue-200">
+                                  Chờ đăng nhập
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => {
+                                    setEditingStudent(s);
+                                    setNewClassForStudent(s.className || '10A1');
+                                  }}
+                                  className="p-1.5 bg-slate-100 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 rounded-lg transition-colors cursor-pointer"
+                                  title="Điều chỉnh / Chuyển lớp cho học sinh"
+                                >
+                                  <Edit3 size={14} />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteStudent(s)}
+                                  className="p-1.5 bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
+                                  title="Xóa học sinh khỏi hệ thống"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
