@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
+import { keyManager } from './keyManager.js';
 
 dotenv.config();
 
@@ -10,9 +10,6 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-
-// Initialize Gemini API
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const SYSTEM_INSTRUCTION = `Bạn là CodeMind, gia sư Lập trình Python độc quyền cho học sinh lớp 10 theo đúng chuẩn sách giáo khoa Kết nối tri thức. Giọng văn hóm hỉnh, thân thiện, dùng nhiều icon (💻, 🐛, 🚀, 🕵️‍♂️) và luôn xưng 'Tôi' gọi 'Bạn'.
 
@@ -46,6 +43,15 @@ app.post('/api/verify-passcode', (req, res) => {
   }
 });
 
+// Kiểm tra trạng thái sức khỏe hồ chứa API Key
+app.get('/api/keys-status', (req, res) => {
+  res.json(keyManager.getStatus());
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', activeKeys: keyManager.keys.length });
+});
+
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) {
@@ -53,18 +59,21 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
-    const response = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
-      contents: messages,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-      }
+    const replyText = await keyManager.executeWithFailover(async (aiClient, currentKey) => {
+      const response = await aiClient.models.generateContent({
+        model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
+        contents: messages,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+        }
+      });
+      return response.text;
     });
 
-    res.json({ reply: response.text });
+    res.json({ reply: replyText });
   } catch (error) {
-    console.error('Error generating response:', error);
-    res.status(500).json({ error: 'Failed to generate response' });
+    console.error('Lỗi sinh phản hồi AI sau khi thử các luồng:', error);
+    res.status(500).json({ error: error.message || 'Không thể tạo phản hồi từ máy chủ AI.' });
   }
 });
 

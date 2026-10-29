@@ -1,25 +1,27 @@
-import { GoogleGenAI } from '@google/genai';
+import { keyManager } from './keyManager.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 async function run() {
   try {
-    const res = await ai.models.generateContent({
-      model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
-      contents: [
-        { role: 'user', parts: [{ text: 'Xin chào gia sư CodeMind, hãy bắt đầu buổi học nào!' }] },
-        { role: 'model', parts: [{ text: 'Chào bạn, chúng ta cùng tìm hiểu Bài 18: Các lệnh vào ra đơn giản nhé!' }] },
-        { role: 'user', parts: [{ text: '1' }] }
-      ]
+    console.log('Kiểm tra trạng thái hồ chứa Key:', keyManager.getStatus());
+    const res = await keyManager.executeWithFailover(async (aiClient, currentKey) => {
+      console.log(`Đang gửi yêu cầu kiểm tra qua Luồng #${currentKey.id} (${currentKey.masked})...`);
+      const response = await aiClient.models.generateContent({
+        model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
+        contents: [
+          { role: 'user', parts: [{ text: 'Xin chào, hãy chào lại ngắn gọn đúng 1 câu!' }] }
+        ]
+      });
+      return response.text;
     });
-    console.log('SUCCESS:', res.text);
+    console.log('Phản hồi thành công từ AI:\n', res);
     process.exit(0);
   } catch (err) {
-    console.error('ERROR DETAILS:', JSON.stringify(err, null, 2));
-    console.error('ERROR MESSAGE:', err.message);
+    console.error('Lỗi kiểm tra:', err.message);
     process.exit(1);
   }
 }
+
 run();
