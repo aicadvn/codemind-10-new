@@ -13,7 +13,7 @@ export const SUPER_ADMIN_TITLE = 'Quản trị toàn diện hệ thống (Admin)
 
 // Thông tin hỗ trợ dành cho học sinh chưa được cấp quyền
 export const ADMIN_CONTACT = {
-  name: 'Ban Quản Trị Hệ Thống (Cô Ngà - Thầy Hòa)',
+  name: 'Ban Quản Trị Hệ Thống - Cô Ngà',
   role: 'Quản trị hệ thống CodeMind 10',
   phone: '0975 702 636',
   email: 'smilers.thp@gmail.com'
