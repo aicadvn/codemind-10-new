@@ -208,7 +208,11 @@ builtins.input = custom_input
     triggerImmediateCloudSync();
     if (!code.trim()) return;
     // Ghi nhật ký học sinh kích hoạt Săn Bug
-    logDebugEvent(currentUser?.uid, lessonId, code, output || 'Học sinh kích hoạt tính năng Săn Bug (AI)');
+    if (isOutputError) {
+      logDebugEvent(currentUser?.uid, lessonId, code, output || 'Phát hiện lỗi khi thực thi chương trình');
+    } else {
+      logDebugEvent(currentUser?.uid, lessonId, code, 'Học sinh kích hoạt Săn Bug để rà soát và tối ưu thuật toán');
+    }
     onAnalyzeError(code);
   };
 

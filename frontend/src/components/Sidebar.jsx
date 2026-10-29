@@ -174,17 +174,26 @@ export default function Sidebar({
       {/* Nút Chức năng Đặc biệt: Dashboard (Giáo viên) HOẶC Sổ tay Săn Bug (Học sinh) */}
       <div className="p-3 bg-white border-b border-gray-100 space-y-2">
         {isTeacher ? (
-          <button
-            onClick={onOpenDashboard}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow text-xs"
-          >
-            <BarChart3 size={15} />
-            Bảng Điều Khiển Sư Phạm (9 Lớp)
-          </button>
+          <div className="space-y-1.5">
+            <button
+              onClick={onOpenDashboard}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow text-xs"
+            >
+              <BarChart3 size={15} />
+              Bảng Điều Khiển Sư Phạm (9 Lớp)
+            </button>
+            <button
+              onClick={onOpenDiary}
+              className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold py-1.5 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-all border border-emerald-200 text-xs"
+            >
+              <Award size={14} className="text-emerald-600" />
+              Sổ tay Săn Bug & Nhật ký cá nhân
+            </button>
+          </div>
         ) : (
           <button
             onClick={onOpenDiary}
-            className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all border border-emerald-200 text-xs"
+            className="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition-all border border-emerald-200 text-xs shadow-sm hover:shadow"
           >
             <Award size={15} className="text-emerald-600" />
             Sổ tay Săn Bug & Nhật ký của em

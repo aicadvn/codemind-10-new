@@ -15,7 +15,13 @@ import {
 
 // Phân loại lỗi lập trình Python thông minh
 export function parsePythonErrorType(errorMsg) {
-  if (!errorMsg || typeof errorMsg !== 'string') return 'UnknownError';
+  if (!errorMsg || typeof errorMsg !== 'string') return 'Tư vấn đàm thoại Socrates';
+  if (errorMsg.includes('Chương trình chạy thành công') || errorMsg.includes('Exit Code 0')) {
+    return 'Chạy thành công (Tư vấn tối ưu)';
+  }
+  if (errorMsg.includes('tối ưu thuật toán') || errorMsg.includes('Học sinh kích hoạt')) {
+    return 'Tư vấn gỡ lỗi (Săn Bug AI)';
+  }
   if (errorMsg.includes('IndentationError')) return 'IndentationError (Lỗi thụt lề)';
   if (errorMsg.includes('SyntaxError')) return 'SyntaxError (Lỗi cú pháp)';
   if (errorMsg.includes('NameError')) return 'NameError (Biến chưa định nghĩa)';
@@ -23,7 +29,11 @@ export function parsePythonErrorType(errorMsg) {
   if (errorMsg.includes('ZeroDivisionError')) return 'ZeroDivisionError (Chia cho số 0)';
   if (errorMsg.includes('IndexError')) return 'IndexError (Vượt quá độ dài danh sách)';
   if (errorMsg.includes('ValueError')) return 'ValueError (Sai giá trị chuyển đổi)';
-  return 'RuntimeError (Lỗi thực thi)';
+  if (errorMsg.includes('EOFError')) return 'EOFError (Hủy nhập dữ liệu)';
+  if (errorMsg.includes('Error') || errorMsg.includes('Exception') || errorMsg.includes('Traceback')) {
+    return 'RuntimeError (Lỗi thực thi)';
+  }
+  return 'Tư vấn đàm thoại Socrates';
 }
 
 // 1. Ghi nhật ký lỗi thực thi (Debugging Log) vào Firestore

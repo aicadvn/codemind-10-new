@@ -40,17 +40,17 @@ function MainApp() {
   if (!currentUser) {
     return (
       <>
-        <LandingPage 
-          onOpenLogin={() => setIsLoginModalOpen(true)} 
-          onOpenInstruction={() => setIsInstructionOpen(true)} 
+        <LandingPage
+          onOpenLogin={() => setIsLoginModalOpen(true)}
+          onOpenInstruction={() => setIsInstructionOpen(true)}
         />
-        <Login 
-          isOpen={isLoginModalOpen} 
-          onClose={() => setIsLoginModalOpen(false)} 
+        <Login
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
         />
-        <InstructionModal 
-          isOpen={isInstructionOpen} 
-          onClose={() => setIsInstructionOpen(false)} 
+        <InstructionModal
+          isOpen={isInstructionOpen}
+          onClose={() => setIsInstructionOpen(false)}
         />
       </>
     );
@@ -58,22 +58,22 @@ function MainApp() {
 
   return (
     <div className="h-screen w-full flex flex-col md:flex-row overflow-hidden bg-gray-50 text-gray-800">
-      
+
       {/* Mobile Header / Tab Navigation */}
       <div className="md:hidden flex bg-white border-b border-gray-200">
-        <button 
+        <button
           onClick={() => setActiveTab('sidebar')}
           className={`flex-1 py-3 flex justify-center items-center gap-2 border-b-2 ${activeTab === 'sidebar' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500'}`}
         >
           <Menu size={20} /> Lộ trình
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('chat')}
           className={`flex-1 py-3 flex justify-center items-center gap-2 border-b-2 ${activeTab === 'chat' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500'}`}
         >
           <MessageSquare size={20} /> Gia sư AI
         </button>
-        <button 
+        <button
           onClick={() => setActiveTab('editor')}
           className={`flex-1 py-3 flex justify-center items-center gap-2 border-b-2 ${activeTab === 'editor' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500'}`}
         >
@@ -83,12 +83,12 @@ function MainApp() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden w-full relative">
-        
+
         {/* Sidebar Pane (20% Desktop) */}
         <div className={`${activeTab === 'sidebar' ? 'block' : 'hidden'} md:block w-full md:w-1/5 h-full border-r border-gray-200 bg-white shadow-sm z-10`}>
-          <Sidebar 
-            activeLesson={activeLesson} 
-            onSelectLesson={handleLessonSelect} 
+          <Sidebar
+            activeLesson={activeLesson}
+            onSelectLesson={handleLessonSelect}
             onOpenInstruction={() => setIsInstructionOpen(true)}
             onOpenDiary={() => setIsDiaryOpen(true)}
             onOpenDashboard={() => setIsDashboardOpen(true)}
