@@ -73,7 +73,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                   </span>
                 </div>
                 <p className="text-[11px] sm:text-xs text-slate-400 font-medium tracking-wide">
-                  THPT Lạng Giang số 1 • Tỉnh Bắc Giang
+                  THPT Lạng Giang số 1 • Tỉnh Bắc Ninh
                 </p>
               </div>
             </div>
@@ -91,7 +91,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 onClick={() => scrollToSection('about')}
                 className="px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-900 transition-all"
               >
-                Giới thiệu & Giá trị
+                Giới thiệu
               </button>
 
               <button 
@@ -152,7 +152,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
               onClick={() => scrollToSection('about')}
               className="w-full text-left py-2.5 px-3 rounded-xl text-sm font-semibold text-slate-200 hover:bg-slate-900"
             >
-              Giới thiệu & Giá trị dự án
+              Giới thiệu
             </button>
             <button 
               onClick={() => scrollToSection('curriculum')}
@@ -207,7 +207,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
               {/* Badge Thương hiệu & Đề tài */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs sm:text-sm font-bold shadow-lg shadow-cyan-500/10 animate-fade-in">
                 <Sparkles size={16} className="text-cyan-400 animate-pulse" />
-                <span>ĐỀ TÀI SÁNG KIẾN KINH NGHIỆM • TRƯỜNG THPT LẠNG GIANG SỐ 1</span>
+                <span>ĐỀ ÁN NGHIÊN CỨU KHOA HỌC KỸ THUẬT</span>
               </div>
 
               {/* Tiêu đề Khủng (Headline) */}
@@ -248,10 +248,6 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 <div className="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
                   <GraduationCap size={15} className="text-emerald-400" />
                   <span>Tác giả: <b>Cô Trần Thị Ngà</b> (GV Tin học)</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
-                  <ShieldCheck size={15} className="text-cyan-400" />
-                  <span>Cố vấn: <b>Thầy Nguyễn Trung Hòa</b></span>
                 </div>
               </div>
 
@@ -372,7 +368,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
 
       </section>
 
-      {/* 4. SECTION: GIỚI THIỆU & CÁC GIÁ TRỊ SỬ DỤNG CAO CẤP CỦA DỰ ÁN (#about) */}
+      {/* 4. SECTION: GIỚI THIỆU VỀ CODE MIND 10 (#about) */}
       <section id="about" className="py-20 bg-slate-900/50 relative border-t border-slate-800/80">
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -382,7 +378,7 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
               Đổi Mới Phương Pháp Sư Phạm
             </span>
             <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-              Các Giá Trị Sử Dụng Cao Cấp Của Dự Án
+              Giới thiệu về CODE MIND 10
             </h2>
             <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
               CodeMind 10 không chỉ là phần mềm dạy học thông thường, mà là một hệ sinh thái sư phạm số toàn diện được xây dựng nhằm giải quyết triệt để các rào cản khi học sinh lớp 10 tiếp cận môn Lập trình Python.
@@ -576,23 +572,22 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
                 </div>
               </div>
               <p className="text-slate-400 leading-relaxed text-[11px]">
-                Đề tài Sáng kiến kinh nghiệm / Nghiên cứu khoa học giáo dục cấp cơ sở nhằm nâng cao chất lượng dạy và học môn Tin học lớp 10 theo Chương trình GDPT 2018.
+                Đề án nghiên cứu khoa học kỹ thuật nhằm nâng cao chất lượng dạy và học môn Tin học lớp 10 theo Chương trình GDPT 2018.
               </p>
             </div>
 
             <div className="md:col-span-4 space-y-2">
               <h5 className="text-sm font-bold text-white mb-2">Đơn vị & Tác giả</h5>
-              <p>🏛️ <b>Đơn vị:</b> Trường THPT Lạng Giang số 1 - Tỉnh Bắc Giang</p>
+              <p>🏛️ <b>Đơn vị:</b> Trường THPT Lạng Giang số 1 - Tỉnh Bắc Ninh</p>
               <p>👩‍🏫 <b>Tác giả:</b> Giáo viên Trần Thị Ngà (Bộ môn Tin học)</p>
-              <p>👨‍🏫 <b>Cố vấn:</b> Thầy Nguyễn Trung Hòa</p>
-              <p>📍 <b>Địa chỉ:</b> Thị trấn Vôi, Huyện Lạng Giang, Tỉnh Bắc Giang</p>
+              <p>📍 <b>Địa chỉ:</b> Thôn Ao Luông, Xã Lạng Giang, Tỉnh Bắc Ninh</p>
             </div>
 
             <div className="md:col-span-3 space-y-2">
               <h5 className="text-sm font-bold text-white mb-2">Liên kết nhanh</h5>
               <ul className="space-y-1.5">
                 <li><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-cyan-400 transition-colors">Về đầu trang</button></li>
-                <li><button onClick={() => scrollToSection('about')} className="hover:text-cyan-400 transition-colors">Giá trị sư phạm</button></li>
+                <li><button onClick={() => scrollToSection('about')} className="hover:text-cyan-400 transition-colors">Giới thiệu</button></li>
                 <li><button onClick={() => scrollToSection('curriculum')} className="hover:text-cyan-400 transition-colors">Lộ trình 17 bài học</button></li>
                 <li><button onClick={onOpenInstruction} className="hover:text-cyan-400 transition-colors">Hướng dẫn sử dụng</button></li>
                 <li><button onClick={onOpenLogin} className="hover:text-cyan-400 text-cyan-300 font-bold transition-colors">Đăng nhập tài khoản</button></li>
