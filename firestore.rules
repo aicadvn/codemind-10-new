@@ -6,6 +6,7 @@ service cloud.firestore {
     function isTeacher() {
       return request.auth != null && 
         (request.auth.token.email == 'smilers.thp@gmail.com' || 
+         request.auth.token.email == 'tranthingalg1@gmail.com' || 
          request.auth.token.email == 'nguyentrunghoa@gmail.com');
     }
 
