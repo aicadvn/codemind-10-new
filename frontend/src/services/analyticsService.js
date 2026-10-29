@@ -36,30 +36,50 @@ export function parsePythonErrorType(errorMsg) {
   return 'Tư vấn đàm thoại Socrates';
 }
 
-// 1. Ghi nhật ký lỗi thực thi (Debugging Log) vào Firestore
+// 1. Ghi nhật ký lỗi thực thi (Debugging Log) vào Firestore & LocalStorage
 export async function logDebugEvent(uid, lessonId, code, errorMsg) {
-  if (!uid || uid === 'passcode_student' || !db) return;
+  if (!uid) return;
   try {
     const errorType = parsePythonErrorType(errorMsg);
-    
-    // Ghi vào sub-collection debugLogs
-    const debugCollection = collection(db, 'users', uid, 'debugLogs');
-    await addDoc(debugCollection, {
+    const newLogItem = {
+      id: 'log_' + Date.now(),
       lessonId: lessonId || 1,
       errorType,
       errorMsg: String(errorMsg).slice(0, 500),
       codeSnippet: String(code).slice(0, 600),
-      timestamp: serverTimestamp()
-    });
+      timestamp: { toDate: () => new Date() }
+    };
 
-    // Cập nhật tổng số bug đã gặp vào tài liệu profile học sinh
-    const userRef = doc(db, 'users', uid);
-    const snap = await getDoc(userRef);
-    const currentCount = snap.exists() ? (snap.data().totalBugs || 0) : 0;
-    await setDoc(userRef, { 
-      totalBugs: currentCount + 1,
-      lastActive: serverTimestamp()
-    }, { merge: true });
+    // 1.1 Luôn lưu vào LocalStorage để học sinh xem lại tức thì ngay cả khi dùng Passcode hoặc mất mạng
+    try {
+      const storageKey = `codemind_debug_logs_${uid}`;
+      const localLogs = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      localLogs.unshift(newLogItem);
+      localStorage.setItem(storageKey, JSON.stringify(localLogs.slice(0, 40)));
+    } catch (localErr) {
+      console.warn('Lỗi lưu log cục bộ:', localErr);
+    }
+
+    // 1.2 Nếu là tài khoản Google chính thức, đồng bộ lên Cloud Firestore
+    if (uid !== 'passcode_student' && db) {
+      const debugCollection = collection(db, 'users', uid, 'debugLogs');
+      await addDoc(debugCollection, {
+        lessonId: lessonId || 1,
+        errorType,
+        errorMsg: String(errorMsg).slice(0, 500),
+        codeSnippet: String(code).slice(0, 600),
+        timestamp: serverTimestamp()
+      });
+
+      // Cập nhật tổng số bug đã gặp vào tài liệu profile học sinh
+      const userRef = doc(db, 'users', uid);
+      const snap = await getDoc(userRef);
+      const currentCount = snap.exists() ? (snap.data().totalBugs || 0) : 0;
+      await setDoc(userRef, { 
+        totalBugs: currentCount + 1,
+        lastActive: serverTimestamp()
+      }, { merge: true });
+    }
 
   } catch (err) {
     console.warn('Lỗi ghi nhật ký Debugging:', err);
@@ -68,21 +88,31 @@ export async function logDebugEvent(uid, lessonId, code, errorMsg) {
 
 // 2. Lưu toàn bộ lịch sử đàm thoại Socrates với Gia sư AI theo từng bài
 export async function saveSocraticChat(uid, lessonId, messages) {
-  if (!uid || uid === 'passcode_student' || !db || !messages || messages.length === 0) return;
+  if (!uid || !messages || messages.length === 0) return;
   try {
-    const chatDoc = doc(db, 'users', uid, 'socraticChats', `lesson_${lessonId}`);
-    // Chỉ lưu tối đa 50 tin nhắn gần nhất để tối ưu dung lượng và hạn ngạch
     const sanitizedMessages = messages.slice(-50).map(m => ({
       role: m.role,
       text: m.text
     }));
 
-    await setDoc(chatDoc, {
-      lessonId,
-      messages: sanitizedMessages,
-      totalMessages: messages.length,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    // 2.1 Luôn lưu vào LocalStorage
+    try {
+      const storageKey = `codemind_socratic_${uid}_lesson_${lessonId}`;
+      localStorage.setItem(storageKey, JSON.stringify(sanitizedMessages));
+    } catch (localErr) {
+      console.warn('Lỗi lưu chat Socrates cục bộ:', localErr);
+    }
+
+    // 2.2 Đồng bộ lên Cloud Firestore
+    if (uid !== 'passcode_student' && db) {
+      const chatDoc = doc(db, 'users', uid, 'socraticChats', `lesson_${lessonId}`);
+      await setDoc(chatDoc, {
+        lessonId,
+        messages: sanitizedMessages,
+        totalMessages: messages.length,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
 
   } catch (err) {
     console.warn('Lỗi lưu hội thoại Socrates:', err);
@@ -91,16 +121,37 @@ export async function saveSocraticChat(uid, lessonId, messages) {
 
 // 3. Tải lịch sử đàm thoại Socrates cũ của bài học khi học sinh mở lại
 export async function loadSocraticChat(uid, lessonId) {
-  if (!uid || uid === 'passcode_student' || !db) return null;
-  try {
-    const chatDoc = doc(db, 'users', uid, 'socraticChats', `lesson_${lessonId}`);
-    const snap = await getDoc(chatDoc);
-    if (snap.exists() && snap.data()?.messages) {
-      return snap.data().messages;
+  if (!uid) return null;
+  
+  // 3.1 Nếu dùng Passcode, đọc trực tiếp từ LocalStorage
+  if (uid === 'passcode_student') {
+    try {
+      const storageKey = `codemind_socratic_${uid}_lesson_${lessonId}`;
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
     }
-    return null;
+  }
+
+  // 3.2 Nếu dùng tài khoản Google, đọc từ Firestore, fallback LocalStorage
+  try {
+    if (db) {
+      const chatDoc = doc(db, 'users', uid, 'socraticChats', `lesson_${lessonId}`);
+      const snap = await getDoc(chatDoc);
+      if (snap.exists() && snap.data()?.messages) {
+        return snap.data().messages;
+      }
+    }
   } catch (err) {
-    console.warn('Lỗi tải hội thoại Socrates:', err);
+    console.warn('Lỗi tải hội thoại Socrates từ Cloud, dùng bộ nhớ cục bộ:', err);
+  }
+
+  try {
+    const storageKey = `codemind_socratic_${uid}_lesson_${lessonId}`;
+    const saved = localStorage.getItem(storageKey);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
     return null;
   }
 }
@@ -125,16 +176,57 @@ export async function logLoginSession(uid, userProfile) {
 
 // 5. Tải danh sách nhật ký gỡ lỗi cá nhân (dành cho Sổ tay Săn Bug của học sinh)
 export async function fetchStudentDebugLogs(uid) {
-  if (!uid || uid === 'passcode_student' || !db) return [];
-  try {
-    const debugCollection = collection(db, 'users', uid, 'debugLogs');
-    const q = query(debugCollection, orderBy('timestamp', 'desc'), limit(30));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch (err) {
-    console.warn('Lỗi tải sổ tay săn bug:', err);
+  if (!uid) return [];
+
+  // 5.1 Nếu dùng Passcode, đọc trực tiếp từ LocalStorage
+  if (uid === 'passcode_student') {
+    try {
+      const storageKey = `codemind_debug_logs_${uid}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.map(log => ({
+          ...log,
+          timestamp: { toDate: () => new Date() }
+        }));
+      }
+    } catch (e) {
+      console.warn(e);
+    }
     return [];
   }
+
+  // 5.2 Nếu dùng tài khoản Google, lấy từ Firestore
+  try {
+    if (db) {
+      const debugCollection = collection(db, 'users', uid, 'debugLogs');
+      const q = query(debugCollection, orderBy('timestamp', 'desc'), limit(30));
+      const snap = await getDocs(q);
+      const cloudLogs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (cloudLogs.length > 0) {
+        return cloudLogs;
+      }
+    }
+  } catch (err) {
+    console.warn('Lỗi tải sổ tay săn bug từ Firestore, fallback cục bộ:', err);
+  }
+
+  // 5.3 Fallback bộ nhớ máy
+  try {
+    const storageKey = `codemind_debug_logs_${uid}`;
+    const saved = localStorage.getItem(storageKey);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.map(log => ({
+        ...log,
+        timestamp: { toDate: () => new Date() }
+      }));
+    }
+  } catch (e) {
+    console.warn(e);
+  }
+
+  return [];
 }
 
 // 6. Dành cho Bảng điều khiển Sư phạm Giáo viên (Teacher Dashboard Analytics)
