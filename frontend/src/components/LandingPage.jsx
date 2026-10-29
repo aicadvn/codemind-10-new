@@ -21,7 +21,8 @@ import {
   School,
   Terminal,
   Cpu,
-  Layers
+  Layers,
+  MessageSquare
 } from 'lucide-react';
 import logoImg from '../assets/Logo_moi_35b82.jpg';
 import heroBgImg from '../assets/hero-bg.jpg';
@@ -381,76 +382,159 @@ export default function LandingPage({ onOpenLogin, onOpenInstruction }) {
               Giới thiệu về CODE MIND 10
             </h2>
             <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
-              CodeMind 10 không chỉ là phần mềm dạy học thông thường, mà là một hệ sinh thái sư phạm số toàn diện được xây dựng nhằm giải quyết triệt để các rào cản khi học sinh lớp 10 tiếp cận môn Lập trình Python.
+              CodeMind 10 không chỉ là phần mềm dạy học thông thường, mà là một hệ sinh thái sư phạm số toàn diện được xây dựng nhằm giải quyết triệt để các rào cản khi học sinh lớp 10 tiếp cận môn Lập trình Python theo Chương trình GDPT 2018.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Lưới 6 Trụ cột Đột phá */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            {/* Trụ cột 1 */}
+            {/* Trụ cột 1: Socratic AI */}
             <div className="bg-slate-900/80 rounded-3xl p-6 border border-slate-800 hover:border-cyan-500/50 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col justify-between">
               <div>
-                <div className="w-13 h-13 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-5">
-                  <Bot size={28} />
+                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-5">
+                  <Bot size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">1. Phương Pháp Gợi Mở Socratic</h3>
+                <h3 className="text-lg font-bold text-white mb-2">1. Vấn Đáp Socratic Không Giải Hộ</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Trái ngược với các công cụ AI thông thường sinh sẵn toàn bộ mã lời giải khiến học sinh ỷ lại, CodeMind 10 áp dụng phương pháp vấn đáp Socratic: chỉ đặt câu hỏi gợi mở, giúp học sinh tự tư duy để tìm ra nguyên nhân và cách giải quyết bài toán.
+                  Thay vì cung cấp code giải sẵn khiến học sinh thụ động, Gia sư AI đóng vai trò người thầy dẫn dắt, liên tục đặt câu hỏi gợi mở để học sinh tự tư duy, hiểu bản chất và tự tay viết code hoàn thiện.
                 </p>
               </div>
               <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center gap-1.5 text-xs text-cyan-400 font-semibold">
-                <CheckCircle2 size={15} /> Kích hoạt tư duy tự học
+                <CheckCircle2 size={15} /> Kích hoạt năng lực tự học
               </div>
             </div>
 
-            {/* Trụ cột 2 */}
-            <div className="bg-slate-900/80 rounded-3xl p-6 border border-slate-800 hover:border-emerald-500/50 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col justify-between">
+            {/* Trụ cột 2: Sổ Tay Săn Bug Tương Tác */}
+            <div className="bg-slate-900/80 rounded-3xl p-6 border border-orange-500/30 hover:border-orange-500/60 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute top-3 right-3 bg-orange-500/20 text-orange-400 text-[10px] font-black uppercase px-2 py-0.5 rounded-full border border-orange-500/30">
+                Nâng cấp mới
+              </div>
               <div>
-                <div className="w-13 h-13 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-5">
-                  <Bug size={28} />
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 mb-5">
+                  <Bug size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">2. Sổ Tay Săn Bug Cá Nhân</h3>
+                <h3 className="text-lg font-bold text-white mb-2">2. Sổ Tay Săn Bug & Lời Khuyên Sư Phạm</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Khi thực thi code bị lỗi (thụt lề <i>IndentationError</i>, cú pháp <i>SyntaxError</i>, gọi sai biến <i>NameError</i>...), hệ thống tự động lưu vết và phân loại khoa học vào Sổ tay Săn Bug để học sinh có thể xem lại bài học kinh nghiệm bất cứ lúc nào.
+                  Lưu trữ tự động từng lần gỡ lỗi với giao diện Accordion tương tác: xem lại chính xác đoạn code vi phạm, thông báo Traceback, sao chép code nhanh, lời khuyên định hướng của Cô Trần Thị Ngà và nút 1-Click mở bài trong Editor để sửa ngay.
                 </p>
               </div>
-              <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center gap-1.5 text-xs text-orange-400 font-semibold">
                 <CheckCircle2 size={15} /> Học sâu qua từng lỗi sai
               </div>
             </div>
 
-            {/* Trụ cột 3 */}
+            {/* Trụ cột 3: Lịch Sử Đàm Thoại Socrates 17 Bài */}
+            <div className="bg-slate-900/80 rounded-3xl p-6 border border-cyan-500/30 hover:border-cyan-500/60 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute top-3 right-3 bg-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase px-2 py-0.5 rounded-full border border-cyan-500/30">
+                Nâng cấp mới
+              </div>
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mb-5">
+                  <MessageSquare size={26} />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">3. Tra Cứu Đàm Thoại 17 Bài Học</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Toàn bộ chuỗi hội thoại vấn đáp giữa học sinh và AI được lưu giữ toàn vẹn theo từng bài học (1 - 17). Học sinh có thể mở lại bất cứ lúc nào để ôn tập mạch tư duy logic hoặc bấm tiếp tục đàm thoại liền mạch.
+                </p>
+              </div>
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center gap-1.5 text-xs text-cyan-400 font-semibold">
+                <CheckCircle2 size={15} /> Mạch tư duy không đứt đoạn
+              </div>
+            </div>
+
+            {/* Trụ cột 4: Bản Đồ Năng Lực & Gamification */}
+            <div className="bg-slate-900/80 rounded-3xl p-6 border border-emerald-500/30 hover:border-emerald-500/60 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col justify-between relative overflow-hidden">
+              <div className="absolute top-3 right-3 bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase px-2 py-0.5 rounded-full border border-emerald-500/30">
+                Chủ đề F
+              </div>
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-5">
+                  <Layers size={26} />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">4. Bản Đồ 17 Bài Học & Thăng Hạng</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Theo dõi trực quan tiến độ 17 bài học chuẩn SGK với tích xanh hoàn thành. Hệ thống game hóa vinh danh học sinh qua 4 cấp bậc danh hiệu: Học viên Khởi động 🌱, Thợ săn Bug 🥈, Chuyên viên Thuật toán 🥇 và Chiến binh Python 🏆.
+                </p>
+              </div>
+              <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
+                <CheckCircle2 size={15} /> Tạo động lực thi đua học tập
+              </div>
+            </div>
+
+            {/* Trụ cột 5: Lưu Trữ Đám Mây Kép & Offline */}
             <div className="bg-slate-900/80 rounded-3xl p-6 border border-slate-800 hover:border-teal-500/50 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col justify-between">
               <div>
-                <div className="w-13 h-13 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-5">
-                  <Cloud size={28} />
+                <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-5">
+                  <Cloud size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">3. Học Liền Mạch & Offline Fallback</h3>
+                <h3 className="text-lg font-bold text-white mb-2">5. Học Liền Mạch & Dự Phòng Kép</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Lưu trữ tự động toàn bộ code và tiến trình lên Cloud Firestore. Học sinh làm dở trên máy tính phòng máy nhà trường, khi về nhà mở điện thoại lên là tiếp tục làm đúng dòng code đó. Tích hợp bộ đệm IndexedDB bảo đảm không mất bài khi mất kết nối mạng.
+                  Tự động đồng bộ thời gian thực lên Cloud Firestore kết hợp bộ đệm cục bộ LocalStorage. Học sinh làm dở trên máy tính phòng máy nhà trường, khi về nhà mở điện thoại lên là làm tiếp đúng đoạn code đó, không sợ mất bài kể cả khi rớt mạng.
                 </p>
               </div>
               <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center gap-1.5 text-xs text-teal-400 font-semibold">
-                <CheckCircle2 size={15} /> Xóa nhòa không gian học tập
+                <CheckCircle2 size={15} /> Học mọi lúc, mọi nơi
               </div>
             </div>
 
-            {/* Trụ cột 4 */}
-            <div className="bg-slate-900/80 rounded-3xl p-6 border border-slate-800 hover:border-indigo-500/50 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col justify-between">
+            {/* Trụ cột 6: Dashboard Giáo Viên & Minh Chứng NCKH */}
+            <div className="bg-slate-900/80 rounded-3xl p-6 border border-indigo-500/30 hover:border-indigo-500/60 transition-all duration-300 hover:-translate-y-1.5 shadow-lg flex flex-col justify-between">
               <div>
-                <div className="w-13 h-13 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-5">
-                  <BarChart3 size={28} />
+                <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-5">
+                  <BarChart3 size={26} />
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">4. Dashboard & Minh Chứng NCKH</h3>
+                <h3 className="text-lg font-bold text-white mb-2">6. Dashboard Sư Phạm & Minh Chứng NCKH</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Bảng điều khiển sư phạm chuyên sâu dành cho giáo viên: theo dõi tỷ lệ hoàn thành của 9 lớp (10A1 đến 10A9), số lỗi học sinh gặp phải và trích xuất báo cáo Excel (.CSV) chuẩn hóa 1-Click làm dữ liệu thực nghiệm định lượng phục vụ viết đề tài SKKN.
+                  Công cụ hỗ trợ quản trị đắc lực dành cho giáo viên: theo dõi tỷ lệ hoàn thành, thời gian học, số lỗi đã tự khắc phục của 9 lớp (10A1 đến 10A9) và trích xuất dữ liệu Excel (.CSV) 1-Click phục vụ nghiên cứu khoa học kỹ thuật và SKKN.
                 </p>
               </div>
               <div className="pt-4 mt-4 border-t border-slate-800/80 flex items-center gap-1.5 text-xs text-indigo-400 font-semibold">
-                <CheckCircle2 size={15} /> Hỗ trợ quản lý & NCKH
+                <CheckCircle2 size={15} /> Dữ liệu thực nghiệm tin cậy
               </div>
             </div>
 
+          </div>
+
+          {/* Banner Giới Thiệu Chuyên Sâu Module Sổ Tay Săn Bug Tương Tác */}
+          <div className="mt-14 bg-gradient-to-r from-emerald-950/70 via-slate-900 to-cyan-950/70 rounded-3xl p-6 sm:p-8 border border-emerald-500/30 shadow-2xl">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+              
+              <div className="space-y-3 max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-lg">
+                    <Award size={18} />
+                  </span>
+                  <span className="text-xs uppercase font-extrabold tracking-wider text-emerald-400">
+                    Trải Nghiệm Học Tập Tương Tác Mới
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white">
+                  Nhật Ký Học Tập & Sổ Tay Săn Bug — "Chiến Tích" Trưởng Thành Của Học Sinh
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Không còn cảm giác sợ sai khi gõ code Python! Mọi sự cố lập trình đều trở thành cơ hội rèn luyện tư duy phản biện. Học sinh có thể tra cứu lại toàn bộ lỗi đã vượt qua, xem lại code, đọc lời khuyên sư phạm của Cô Trần Thị Ngà và xem lại lịch sử vấn đáp với Gia sư AI.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+                <button
+                  onClick={onOpenInstruction}
+                  className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-5 py-3 rounded-2xl text-xs sm:text-sm border border-slate-700 flex items-center justify-center gap-2 transition-all hover:bg-slate-750"
+                >
+                  <BookOpen size={16} className="text-cyan-400" />
+                  Xem Cẩm Nang Hướng Dẫn
+                </button>
+                <button
+                  onClick={onOpenLogin}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black px-6 py-3 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all transform hover:scale-105"
+                >
+                  <span>Trải Nghiệm Ngay</span>
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+
+            </div>
           </div>
 
         </div>
