@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Quy tắc an toàn: Mỗi học sinh chỉ được quyền ĐỌC và GHI dữ liệu mang đúng UID của mình
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Cho phép học sinh đọc và ghi các bài code trong sub-collection codeSnippets của mình
+      match /codeSnippets/{lessonDoc} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Mặc định chặn tất cả các truy cập không xác thực khác
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

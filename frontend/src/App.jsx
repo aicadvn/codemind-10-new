@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import Chatbot from './components/Chatbot';
 import EditorPane from './components/EditorPane';
@@ -6,19 +7,12 @@ import Login from './components/Login';
 import InstructionModal from './components/InstructionModal';
 import { Menu, MessageSquare, Code } from 'lucide-react';
 
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('codemind_auth') === 'true';
-  });
+function MainApp() {
+  const { currentUser } = useAuth();
   const [activeLesson, setActiveLesson] = useState(null);
   const [activeTab, setActiveTab] = useState('chat'); // 'sidebar', 'chat', 'editor'
   const [errorToAnalyze, setErrorToAnalyze] = useState(null);
   const [isInstructionOpen, setIsInstructionOpen] = useState(false);
-
-  const handleLoginSuccess = () => {
-    sessionStorage.setItem('codemind_auth', 'true');
-    setIsAuthenticated(true);
-  };
 
   const handleLessonSelect = (lesson) => {
     setActiveLesson(lesson);
@@ -35,8 +29,8 @@ function App() {
     }
   };
 
-  if (!isAuthenticated) {
-    return <Login onLoginSuccess={handleLoginSuccess} />;
+  if (!currentUser) {
+    return <Login />;
   }
 
   return (
@@ -68,7 +62,7 @@ function App() {
       <div className="flex-1 flex overflow-hidden w-full relative">
         
         {/* Sidebar Pane (20% Desktop) */}
-        <div className={`${activeTab === 'sidebar' ? 'block' : 'hidden'} md:block w-full md:w-1/5 h-full border-r border-gray-200 bg-white shadow-sm z-10`} >
+        <div className={`${activeTab === 'sidebar' ? 'block' : 'hidden'} md:block w-full md:w-1/5 h-full border-r border-gray-200 bg-white shadow-sm z-10`}>
           <Sidebar activeLesson={activeLesson} onSelectLesson={handleLessonSelect} onOpenInstruction={() => setIsInstructionOpen(true)} />
         </div>
 
@@ -79,12 +73,20 @@ function App() {
 
         {/* Editor Pane (40% Desktop) */}
         <div className={`${activeTab === 'editor' ? 'block' : 'hidden'} md:block w-full md:w-2/5 h-full bg-white z-10`}>
-          <EditorPane onAnalyzeError={handleErrorAnalysis} />
+          <EditorPane activeLesson={activeLesson} onAnalyzeError={handleErrorAnalysis} />
         </div>
       </div>
 
       <InstructionModal isOpen={isInstructionOpen} onClose={() => setIsInstructionOpen(false)} />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 }
 
