@@ -119,11 +119,11 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
     setTimeout(() => setCopiedCodeId(null), 2000);
   };
 
-  // Mở bài học trong editor
-  const handleJumpToLesson = (lessonId) => {
+  // Mở bài học trong editor / workspace
+  const handleJumpToLesson = (lessonId, preferredTab = 'editor') => {
     const lesson = LESSONS.find(l => l.id === Number(lessonId)) || LESSONS[0];
     if (onSelectLesson) {
-      onSelectLesson(lesson);
+      onSelectLesson(lesson, preferredTab);
     }
     onClose();
   };
@@ -460,7 +460,7 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
                               </button>
 
                               <button
-                                onClick={() => handleJumpToLesson(log.lessonId)}
+                                onClick={() => handleJumpToLesson(log.lessonId, 'editor')}
                                 className="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm hover:shadow transition-all ml-auto"
                               >
                                 <span>Mở bài này trong Trình Soạn Thảo</span>
@@ -508,7 +508,7 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
                   </select>
 
                   <button
-                    onClick={() => handleJumpToLesson(socraticLessonId)}
+                    onClick={() => handleJumpToLesson(socraticLessonId, 'chat')}
                     className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm transition-all shrink-0"
                     title="Vào bài này để thực hành tiếp"
                   >
@@ -550,7 +550,7 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
                         Lịch sử {socraticMessages.length} lượt đàm thoại:
                       </span>
                       <button
-                        onClick={() => handleJumpToLesson(socraticLessonId)}
+                        onClick={() => handleJumpToLesson(socraticLessonId, 'chat')}
                         className="text-xs font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
                       >
                         Tiếp tục đàm thoại ở bài này <ArrowRight size={13} />
@@ -636,20 +636,22 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
                         return (
                           <div 
                             key={lesson.id}
-                            className="p-3 sm:p-4 flex items-center justify-between gap-3 hover:bg-slate-50/80 transition-colors"
+                            onClick={() => handleJumpToLesson(lesson.id, 'editor')}
+                            className="p-3 sm:p-4 flex items-center justify-between gap-3 hover:bg-emerald-50/50 transition-colors cursor-pointer group"
+                            title={`Nhấn để vào học Bài ${lesson.id}: ${lesson.title}`}
                           >
                             <div className="flex items-center gap-3 overflow-hidden">
                               <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
                                 isDone 
                                   ? 'bg-emerald-100 text-emerald-600 font-bold' 
-                                  : 'bg-slate-100 text-slate-400 font-medium'
+                                  : 'bg-slate-100 text-slate-400 font-medium group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors'
                               }`}>
                                 {isDone ? <CheckCircle2 size={18} /> : <span className="text-xs">{lesson.id}</span>}
                               </div>
 
                               <div className="overflow-hidden">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs font-bold text-slate-800">
+                                  <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">
                                     Bài {lesson.id}: {lesson.title}
                                   </span>
                                   {isDone && (
@@ -665,7 +667,11 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
                             </div>
 
                             <button
-                              onClick={() => handleJumpToLesson(lesson.id)}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleJumpToLesson(lesson.id, 'editor');
+                              }}
                               className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all shrink-0 ${
                                 isDone 
                                   ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' 
@@ -673,7 +679,7 @@ export default function StudentDiaryModal({ isOpen, onClose, onSelectLesson }) {
                               }`}
                             >
                               <span>{isDone ? 'Ôn lại' : 'Vào học'}</span>
-                              <ArrowRight size={13} />
+                              <ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
                             </button>
                           </div>
                         );

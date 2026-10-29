@@ -21,11 +21,11 @@ function MainApp() {
   const [isDashboardOpen, setIsDashboardOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  const handleLessonSelect = (lesson) => {
+  const handleLessonSelect = (lesson, preferredTab = null) => {
     setActiveLesson(lesson);
-    // Trên mobile, tự động chuyển sang tab chat sau khi chọn bài
+    // Trên mobile, tự động chuyển sang tab tương ứng (mặc định là chat)
     if (window.innerWidth < 768) {
-      setActiveTab('chat');
+      setActiveTab(preferredTab || 'chat');
     }
   };
 
@@ -113,7 +113,11 @@ function MainApp() {
       <ClassSelectModal isOpen={needsClassSelection} />
 
       {/* Modal Sổ Tay Săn Bug Cá Nhân cho Học Sinh */}
-      <StudentDiaryModal isOpen={isDiaryOpen} onClose={() => setIsDiaryOpen(false)} />
+      <StudentDiaryModal 
+        isOpen={isDiaryOpen} 
+        onClose={() => setIsDiaryOpen(false)} 
+        onSelectLesson={handleLessonSelect}
+      />
 
       {/* Bảng Điều Khiển Sư Phạm & Xuất Dữ Liệu NCKH cho Giáo Viên */}
       <TeacherDashboard isOpen={isDashboardOpen} onClose={() => setIsDashboardOpen(false)} />
