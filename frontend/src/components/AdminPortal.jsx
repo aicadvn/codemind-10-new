@@ -54,7 +54,7 @@ export default function AdminPortal({
   const { currentUser } = useAuth();
   const currentAdminLabel = currentUser?.email === 'nguyentrunghoa@gmail.com'
     ? 'Thầy Nguyễn Trung Hòa'
-    : (currentUser?.email === 'smilers.thp@gmail.com' || currentUser?.email === 'tranthingalg1@gmail.com' ? 'Cô Trần Thị Ngà' : (currentUser?.displayName || 'Ban Quản Trị'));
+    : (currentUser?.email === 'smilers.thp@gmail.com' ? 'Cô Trần Thị Ngà' : (currentUser?.displayName || 'Ban Quản Trị'));
 
   const [activeTab, setActiveTab] = useState('students'); // 'students' | 'teachers'
   const [students, setStudents] = useState([]);
