@@ -5,7 +5,8 @@ service cloud.firestore {
     // Kiểm tra tài khoản Quản trị viên tối cao (Super Admin)
     function isSuperAdmin() {
       return request.auth != null && 
-        (request.auth.token.email == 'tranthingalg1@gmail.com' ||
+        (request.auth.token.email == 'smilers.thp@gmail.com' ||
+         request.auth.token.email == 'tranthingalg1@gmail.com' ||
          request.auth.token.email == 'nguyentrunghoa@gmail.com');
     }
 
