@@ -1,17 +1,12 @@
 import { useState } from 'react';
-import { Lock, Loader2, Sparkles, KeyRound, ChevronDown, ChevronUp, X, School } from 'lucide-react';
+import { Loader2, X, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { SCHOOL_CLASSES } from '../config/schoolConfig';
 import logoImg from '../assets/Logo_moi_35b82.jpg';
 
 export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
-  const { loginWithGoogle, loginWithPasscode, isFirebaseReady } = useAuth();
-  const [passcode, setPasscode] = useState('');
-  const [selectedClass, setSelectedClass] = useState('10A1');
+  const { loginWithGoogle, isFirebaseReady } = useAuth();
   const [error, setError] = useState('');
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
-  const [isLoadingPasscode, setIsLoadingPasscode] = useState(false);
-  const [showPasscodeOption, setShowPasscodeOption] = useState(!isFirebaseReady);
 
   if (!isOpen) return null;
 
@@ -37,35 +32,6 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
     }
   };
 
-  // Xử lý đăng nhập bằng Mật mã lớp học (Passcode dự phòng)
-  const handlePasscodeSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    
-    if (!passcode.trim()) {
-      setError('Vui lòng nhập mã truy cập của lớp');
-      return;
-    }
-
-    setIsLoadingPasscode(true);
-    try {
-      const success = await loginWithPasscode(passcode, selectedClass);
-      if (success) {
-        if (onLoginSuccess) onLoginSuccess();
-        if (onClose) onClose();
-      } else {
-        setError('Mã truy cập lớp học không chính xác. Vui lòng thử lại!');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Lỗi kết nối máy chủ xác thực. Vui lòng thử lại sau.');
-    } finally {
-      setIsLoadingPasscode(false);
-    }
-  };
-
-  const isLoading = isLoadingGoogle || isLoadingPasscode;
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in overflow-y-auto">
       {/* Background decoration */}
@@ -73,7 +39,7 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
       <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none"></div>
 
       <div 
-        className="bg-white rounded-3xl shadow-2xl p-7 sm:p-9 max-w-[440px] w-full relative z-10 border border-slate-100 animate-scale-up"
+        className="bg-white rounded-3xl shadow-2xl p-7 sm:p-9 max-w-[420px] w-full relative z-10 border border-slate-100 animate-scale-up"
         onClick={(e) => e.stopPropagation()}
       >
         
@@ -116,7 +82,7 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
           <button 
             type="button"
             onClick={handleGoogleSignIn}
-            disabled={isLoading || !isFirebaseReady}
+            disabled={isLoadingGoogle || !isFirebaseReady}
             title={!isFirebaseReady ? 'Cần cấu hình Firebase trong .env để bật Google Login' : 'Đăng nhập bằng tài khoản Google'}
             className="w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-3 border border-gray-300 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed group"
           >
@@ -142,88 +108,26 @@ export default function Login({ isOpen = true, onClose, onLoginSuccess }) {
                 />
               </svg>
             )}
-            <span className="text-sm">
+            <span className="text-sm font-semibold">
               {isLoadingGoogle ? 'Đang kết nối Google...' : 'Đăng nhập với Google / Gmail'}
             </span>
           </button>
 
           {!isFirebaseReady && (
             <div className="text-center text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200">
-              ⚡ Chưa nạp cấu hình Firebase trong .env. Sử dụng chế độ Passcode dự phòng bên dưới.
+              ⚡ Chưa nạp cấu hình Firebase trong .env. Vui lòng liên hệ quản trị viên.
             </div>
           )}
 
-          {/* Đường phân cách */}
-          <div className="relative flex py-1 items-center">
-            <div className="flex-grow border-t border-gray-200"></div>
-            <span className="flex-shrink mx-3 text-gray-400 text-xs uppercase font-medium">Hoặc</span>
-            <div className="flex-grow border-t border-gray-200"></div>
-          </div>
-
-          {/* Tùy chọn đăng nhập nhanh bằng Passcode lớp học */}
-          <div className="border border-gray-200 rounded-2xl p-3 bg-gray-50/80">
-            <button
-              type="button"
-              onClick={() => setShowPasscodeOption(!showPasscodeOption)}
-              className="w-full flex items-center justify-between text-left text-xs font-semibold text-gray-700 hover:text-blue-600 transition-colors"
-            >
-              <span className="flex items-center gap-1.5">
-                <KeyRound size={14} className="text-emerald-600" />
-                Vào nhanh bằng mật mã lớp học (Dự phòng)
-              </span>
-              {showPasscodeOption ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-
-            {showPasscodeOption && (
-              <form onSubmit={handlePasscodeSubmit} className="mt-3 space-y-3 animate-fade-in">
-                
-                {/* Chọn lớp (10A1 - 10D4) */}
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-600 mb-1 flex items-center gap-1">
-                    <School size={12} className="text-blue-600" /> Chọn lớp của em:
-                  </label>
-                  <select
-                    value={selectedClass}
-                    onChange={(e) => setSelectedClass(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 text-xs font-bold focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none shadow-sm"
-                  >
-                    {SCHOOL_CLASSES.map(cls => (
-                      <option key={cls} value={cls}>Lớp {cls} - Khối 10 THPT Lạng Giang 1</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
-                    <Lock size={15} />
-                  </div>
-                  <input 
-                    type="password" 
-                    value={passcode}
-                    onChange={(e) => setPasscode(e.target.value)}
-                    placeholder="Nhập mã truy cập lớp..."
-                    className="w-full pl-10 pr-3 py-2 bg-white border border-gray-200 rounded-xl text-gray-700 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all shadow-sm"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <button 
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 px-4 rounded-xl flex justify-center items-center gap-2 transition-all shadow-sm hover:shadow active:scale-[0.99] disabled:opacity-70 text-xs"
-                >
-                  {isLoadingPasscode ? (
-                    <Loader2 className="animate-spin" size={15} />
-                  ) : (
-                    'Vào phòng học bằng mã'
-                  )}
-                </button>
-              </form>
-            )}
+          <div className="pt-2 px-1 text-center">
+            <p className="text-[12px] text-gray-500 leading-relaxed flex items-center justify-center gap-1.5">
+              <ShieldCheck size={14} className="text-emerald-600 shrink-0" />
+              <span>Đăng nhập an toàn để lưu tiến độ và nhật ký học tập</span>
+            </p>
           </div>
         </div>
 
-        <div className="mt-5 text-center text-[11px] text-gray-400 font-medium">
+        <div className="mt-6 pt-4 border-t border-gray-100 text-center text-[11px] text-gray-400 font-medium">
           © 2026 - 2027 • Trường THPT Lạng Giang số 1
         </div>
       </div>

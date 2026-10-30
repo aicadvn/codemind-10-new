@@ -46,24 +46,11 @@ export function AuthProvider({ children }) {
 
   // Lắng nghe trạng thái đăng nhập Firebase hoặc SessionStorage
   useEffect(() => {
-    // 1. Kiểm tra nếu đã đăng nhập bằng Passcode trước đó
-    const isPasscodeAuth = sessionStorage.getItem('codemind_auth') === 'true';
-    const isPasscodeMode = sessionStorage.getItem('codemind_auth_type') === 'passcode';
-
-    if (isPasscodeAuth && isPasscodeMode) {
-      setCurrentUser({
-        uid: 'passcode_student',
-        displayName: 'Học sinh lớp 10',
-        email: 'Phòng máy trường',
-        isPasscode: true,
-        photoURL: null
-      });
-      setUserRole('student');
-      setIsAdmin(false);
-      setIsAccessBlocked(false);
-      setUserClass(sessionStorage.getItem('codemind_passcode_class') || '10A1');
-      setLoading(false);
-      return;
+    // 1. Dọn dẹp phiên Passcode cũ (nếu có) để bắt buộc đăng nhập chính danh qua Google
+    if (sessionStorage.getItem('codemind_auth_type') === 'passcode') {
+      sessionStorage.removeItem('codemind_auth');
+      sessionStorage.removeItem('codemind_auth_type');
+      sessionStorage.removeItem('codemind_passcode_class');
     }
 
     // 2. Nếu có cấu hình Firebase, lắng nghe trạng thái Firebase Auth
@@ -207,15 +194,13 @@ export function AuthProvider({ children }) {
 
           setCurrentUser(user);
         } else {
-          if (!isPasscodeAuth) {
-            setCurrentUser(null);
-            setUserRole('student');
-            setUserClass(null);
-            setIsAdmin(false);
-            setIsAccessBlocked(false);
-            setBlockedEmail('');
-            setAutoOpenAdmin(false);
-          }
+          setCurrentUser(null);
+          setUserRole('student');
+          setUserClass(null);
+          setIsAdmin(false);
+          setIsAccessBlocked(false);
+          setBlockedEmail('');
+          setAutoOpenAdmin(false);
         }
         setLoading(false);
       });
