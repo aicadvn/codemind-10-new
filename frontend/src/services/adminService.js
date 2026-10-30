@@ -538,11 +538,17 @@ export async function fetchAllTeachersList() {
       const snap = await getDocs(collection(db, 'teachers'));
       snap.forEach(d => {
         const data = d.data();
-        const norm = normalizeEmail(data.email || d.id);
+        const decodedEmail = d.id.replace(/_at_/g, '@').replace(/_dot_/g, '.');
+        const norm = normalizeEmail(data.email || decodedEmail);
+        const existing = teachersMap.get(norm) || {};
         teachersMap.set(norm, {
+          ...existing,
           id: d.id,
           ...data,
           email: norm,
+          name: data.name || existing.name || 'Giáo viên Tin học',
+          role: data.role || existing.role || 'teacher',
+          assignedClasses: data.assignedClasses || existing.assignedClasses || ['all'],
           isDefault: isSuperAdmin(norm)
         });
       });
@@ -601,8 +607,10 @@ export async function updateTeacherAssignedClasses(email, newAssignedClasses) {
   const docId = normEmail.replace(/\./g, '_dot_').replace(/@/g, '_at_');
 
   const teacherRef = doc(db, 'teachers', docId);
+  const assigned = Array.isArray(newAssignedClasses) ? newAssignedClasses : [newAssignedClasses];
   await setDoc(teacherRef, {
-    assignedClasses: Array.isArray(newAssignedClasses) ? newAssignedClasses : [newAssignedClasses],
+    email: normEmail,
+    assignedClasses: assigned,
     updatedAt: serverTimestamp()
   }, { merge: true });
 
@@ -611,7 +619,11 @@ export async function updateTeacherAssignedClasses(email, newAssignedClasses) {
     const q = query(collection(db, 'users'), where('email', '==', normEmail));
     const snap = await getDocs(q);
     snap.forEach(userDoc => {
-      setDoc(userDoc.ref, { assignedClasses: newAssignedClasses }, { merge: true });
+      setDoc(userDoc.ref, { 
+        role: 'teacher',
+        className: 'Ban Giảng Dạy',
+        assignedClasses: assigned 
+      }, { merge: true });
     });
   } catch (e) {
     console.warn('Lỗi cập nhật users assignedClasses:', e);

@@ -45,7 +45,7 @@ export const TEACHER_PROFILES = {
     name: 'Cô Trần Thị Ngà',
     role: 'Giáo viên bộ môn Tin học',
     school: 'THPT Lạng Giang số 1',
-    assignedClasses: ['10A1', '10A4', '10A5', '10A6'],
+    assignedClasses: ['all'],
     pins: ['NGA_LG1_2026', '261088', '1088', '202610']
   },
   'nguyentrunghoa@gmail.com': {

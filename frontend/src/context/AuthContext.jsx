@@ -67,14 +67,17 @@ export function AuthProvider({ children }) {
           let isEmailTeacher = TEACHER_EMAILS.includes(normEmail);
           let teacherAssigned = isSuper ? ['all'] : (TEACHER_PROFILES[normEmail]?.assignedClasses || ['all']);
 
-          // Kiểm tra thêm trong collection teachers trên Firestore nếu chưa có trong danh sách tĩnh
-          if (!isSuper && !isEmailTeacher && db) {
+          // Kiểm tra thêm trong collection teachers trên Firestore (ưu tiên phân công lớp động do Quản trị viên cập nhật)
+          if (!isSuper && db) {
             try {
               const teacherDocId = normEmail.replace(/\./g, '_dot_').replace(/@/g, '_at_');
               const tDoc = await getDoc(doc(db, 'teachers', teacherDocId));
               if (tDoc.exists()) {
                 isEmailTeacher = true;
-                teacherAssigned = tDoc.data().assignedClasses || ['all'];
+                const dbAssigned = tDoc.data().assignedClasses;
+                if (Array.isArray(dbAssigned) && dbAssigned.length > 0) {
+                  teacherAssigned = dbAssigned;
+                }
               }
             } catch (e) {
               console.warn('Lỗi đọc teacher doc:', e);
