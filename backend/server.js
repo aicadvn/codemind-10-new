@@ -81,7 +81,7 @@ app.get('/api/diagnose', async (req, res) => {
     const k = keyManager.keys[i];
     try {
       const resp = await k.client.models.generateContent({
-        model: 'gemini-3.5-flash-lite',
+        model: 'gemini-flash-lite-latest',
         contents: [{ role: 'user', parts: [{ text: 'ping' }] }],
         config: { systemInstruction: SYSTEM_INSTRUCTION }
       });
@@ -97,8 +97,8 @@ app.get('/api/diagnose', async (req, res) => {
 // Danh sách các mô hình chuẩn Free Tier hạn mức cao nhất (1.500 RPD, 15 RPM mỗi Gmail)
 // Tuyệt đối KHÔNG đưa gemini-3.5-flash (bản preview bị trần 20 lượt/ngày) vào danh sách này
 const CANDIDATE_MODELS = [
-  'gemini-3.5-flash-lite',
   'gemini-flash-lite-latest',
+  'gemini-2.5-flash-lite',
   'gemini-3.1-flash-lite'
 ];
 

@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Send, Bot, User, Loader2, Sparkles, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { saveSocraticChat, loadSocraticChat } from '../services/analyticsService';
+import { askGeminiDirect } from '../services/clientGeminiService';
 
 // Hàm khử ký tự LaTeX Dollar thừa ($ hoặc $$) để công thức toán tự nhiên và không gây hiểu lầm cho học sinh
 export const cleanLatexMath = (text) => {
@@ -102,7 +103,7 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
       };
       setMessages(prev => {
         const next = [...prev, userMsg];
-        sendMessageApi(next);
+        setTimeout(() => sendMessageApi(next), 50);
         return next;
       });
     }
@@ -138,37 +139,44 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
 
     try {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-      let data = null;
-      let attempts = 0;
-      const maxAttempts = 2; // Tự động thử lại 1 lần nếu gặp lúc máy chủ đổi luồng xoay vòng hoặc khởi động
+      let replyText = null;
 
-      while (attempts < maxAttempts) {
-        attempts++;
-        try {
-          const res = await fetch(`${backendUrl}/api/chat`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: formattedHistory })
-          });
-          if (res.ok) {
-            const json = await res.json();
-            if (json && json.reply) {
-              data = json;
-              break;
-            }
+      // 1. Thử gọi backend (Render) với timeout 4.5s
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+        const res = await fetch(`${backendUrl}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: formattedHistory }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.reply) {
+            replyText = json.reply;
           }
-        } catch (fetchErr) {
-          console.warn(`[CodeMind Chat] Lần gửi #${attempts} rớt kết nối, đang thử lại...`, fetchErr);
         }
+      } catch (backendErr) {
+        console.warn('[CodeMind Chat] Backend phản hồi chậm hoặc lỗi mạng, tự động kích hoạt Direct Client Engine...', backendErr?.message);
+      }
 
-        if (attempts < maxAttempts) {
-          await new Promise(r => setTimeout(r, 1200)); // Nghỉ 1.2s rồi tự động gửi lại
+      // 2. Kích hoạt Luồng Dự phòng Trực tiếp (Direct Client-Side Gemini Engine)
+      // Sử dụng dải IP sạch tại trường/nhà riêng của học sinh tại Việt Nam với 12 Key xoay vòng
+      if (!replyText) {
+        try {
+          replyText = await askGeminiDirect(formattedHistory);
+        } catch (directErr) {
+          console.error('[CodeMind Direct Engine Error]:', directErr);
         }
       }
       
       let finalMessages = [...chatHistory];
-      if (data && data.reply) {
-        finalMessages.push({ role: 'CodeMind', text: cleanLatexMath(data.reply) });
+      if (replyText) {
+        finalMessages.push({ role: 'CodeMind', text: cleanLatexMath(replyText) });
       } else {
         finalMessages.push({ role: 'CodeMind', text: 'Xin lỗi, hệ thống AI đang bận. Bạn hãy thử lại sau nhé!' });
       }
