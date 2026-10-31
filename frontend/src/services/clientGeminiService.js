@@ -7,6 +7,7 @@
  * Frontend tại trình duyệt học sinh (kết nối trực tiếp từ mạng trường/nhà riêng tại Việt Nam) sẽ tự động kích hoạt dịch vụ này
  * để gọi trực tiếp tới Google Gemini Edge API mà KHÔNG bị lỗi 429 hay gián đoạn trải nghiệm học tập!
  */
+import { logSystemIncident } from './systemLoggerService';
 
 const ENCODED_POOL = [
   "QVEuQWI4Uk42TGJSYlNkNC1uUDY3QXh3aUlkR2laR2xQeTQyZHkwRkdxdk03aWRKYlZlZUE=",
@@ -56,6 +57,7 @@ export async function askGeminiDirect(formattedHistory) {
   const totalKeys = GEMINI_API_KEYS.length;
 
   for (let attempt = 0; attempt < totalKeys; attempt++) {
+    const keyNumber = ((keyIndex + attempt) % totalKeys) + 1;
     const currentKey = GEMINI_API_KEYS[(keyIndex + attempt) % totalKeys];
 
     for (const model of CANDIDATE_MODELS) {
@@ -76,6 +78,18 @@ export async function askGeminiDirect(formattedHistory) {
           const data = await res.json();
           const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (reply) {
+            // Nếu đây là lần thử sau khi 1 key trước đó lỗi, ghi nhận phục hồi tự động
+            if (attempt > 0) {
+              logSystemIncident({
+                level: 'AUTO_RECOVERED',
+                source: 'CLIENT_DIRECT',
+                errorType: 'KEY_FAILOVER_SUCCESS',
+                message: `Tự động chuyển đổi thành công sang Luồng #${keyNumber}`,
+                details: `Đã khôi phục phục vụ sau ${attempt} lượt thử dự phòng trên model ${model}`,
+                resolution: 'Tự phục hồi qua luồng dự phòng'
+              });
+            }
+
             // Chuyển vị trí key cho lượt sau để chia đều tải
             keyIndex = (keyIndex + attempt + 1) % totalKeys;
             return reply;
@@ -83,12 +97,32 @@ export async function askGeminiDirect(formattedHistory) {
         } else {
           const errData = await res.json().catch(() => ({}));
           lastError = new Error(errData.error?.message || `HTTP ${res.status}`);
+
+          if (res.status === 429) {
+            logSystemIncident({
+              level: 'WARNING',
+              source: 'CLIENT_DIRECT',
+              errorType: 'AI_RATE_LIMIT_429',
+              message: `Luồng Key #${keyNumber} chạm hạn mức tạm thời (429/Quota)`,
+              details: `Model: ${model}. Tự động kích hoạt chuyển luồng dự phòng...`,
+              resolution: 'Đang chuyển luồng kế tiếp'
+            });
+          }
         }
       } catch (err) {
         lastError = err;
       }
     }
   }
+
+  logSystemIncident({
+    level: 'ERROR',
+    source: 'CLIENT_DIRECT',
+    errorType: 'ALL_KEYS_EXHAUSTED',
+    message: 'Tất cả 12 luồng API Key trực tiếp đều bị từ chối hoặc hết hạn mức',
+    details: lastError?.message || 'Unknown network error',
+    resolution: 'Chuyển tiếp dự phòng máy chủ Render'
+  });
 
   throw lastError || new Error('Tất cả luồng API Key trực tiếp đều thất bại.');
 }

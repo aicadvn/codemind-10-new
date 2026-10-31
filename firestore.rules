@@ -53,6 +53,15 @@ service cloud.firestore {
       }
     }
     
+    // Nhật ký sự cố & giám sát độ tin cậy hệ thống (System Incident Logs)
+    match /system_incident_logs/{logId} {
+      // Cho phép mọi máy trạm học sinh / giáo viên ghi nhận sự kiện lỗi
+      allow create: if true;
+      // Chỉ Super Admin hoặc Giáo viên mới có quyền xem và dọn dẹp nhật ký
+      allow read, delete: if isSuperAdmin() || isTeacher();
+      allow update: if false;
+    }
+
     // Chặn các truy cập ngoài danh mục
     match /{document=**} {
       allow read, write: if false;

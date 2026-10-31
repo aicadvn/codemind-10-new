@@ -4,6 +4,7 @@ import { Send, Bot, User, Loader2, Sparkles, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { saveSocraticChat, loadSocraticChat } from '../services/analyticsService';
 import { askGeminiDirect } from '../services/clientGeminiService';
+import { logSystemIncident } from '../services/systemLoggerService';
 
 // Hàm khử ký tự LaTeX Dollar thừa ($ hoặc $$) để công thức toán tự nhiên và không gây hiểu lầm cho học sinh
 export const cleanLatexMath = (text) => {
@@ -185,6 +186,18 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
         finalMessages.push({ role: 'CodeMind', text: cleanLatexMath(replyText) });
       } else {
         finalMessages.push({ role: 'CodeMind', text: 'Xin lỗi, hệ thống AI đang bận. Bạn hãy thử lại sau nhé!' });
+
+        // Ghi nhận nhật ký sự cố báo bận phục vụ minh chứng NCKH & khắc phục nhanh
+        logSystemIncident({
+          level: 'ERROR',
+          source: 'CHATBOT_INTERFACE',
+          errorType: 'AI_BUSY_INCIDENT',
+          message: 'Học sinh nhận cảnh báo AI đang bận',
+          details: 'Cả tuyến Direct Google lẫn tuyến Backend Render đều không phản hồi',
+          userEmail: currentUser?.email || 'Học sinh',
+          userClass: currentUser?.className || '10A1',
+          resolution: 'Cần kiểm tra trạng thái API Key & mạng phòng máy'
+        });
       }
 
       setMessages(finalMessages);
@@ -196,6 +209,15 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
 
     } catch (error) {
       console.error(error);
+      logSystemIncident({
+        level: 'ERROR',
+        source: 'CHATBOT_INTERFACE',
+        errorType: 'UNCAUGHT_CHAT_ERROR',
+        message: 'Lỗi không xác định trong quá trình gửi tin nhắn AI',
+        details: error?.message || String(error),
+        userEmail: currentUser?.email,
+        userClass: currentUser?.className
+      });
       setMessages(prev => [...prev, { role: 'CodeMind', text: 'Đã xảy ra lỗi kết nối với máy chủ AI. 🐛' }]);
     } finally {
       setIsLoading(false);

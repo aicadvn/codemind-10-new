@@ -9,6 +9,8 @@
  * 4. Chống can thiệp, chỉnh sửa DOM (Anti-DOM Tampering)
  */
 
+import { logSystemIncident } from '../services/systemLoggerService';
+
 let overlayElement = null;
 
 function createSecurityOverlay() {
@@ -121,6 +123,14 @@ export function initSecurityShield() {
     if (detected && !isDevToolsOpen) {
       isDevToolsOpen = true;
       if (overlay) overlay.style.display = 'flex';
+      logSystemIncident({
+        level: 'WARNING',
+        source: 'SECURITY_SHIELD',
+        errorType: 'DOM_TAMPER_ATTEMPT',
+        message: 'Phát hiện mở cửa sổ F12 / DevTools can thiệp mã nguồn',
+        details: `Độ lệch cửa sổ: wDiff=${window.outerWidth - window.innerWidth}, hDiff=${window.outerHeight - window.innerHeight}`,
+        resolution: 'Đã kích hoạt màn chắn an ninh khóa tương tác'
+      });
     } else if (!detected && isDevToolsOpen) {
       isDevToolsOpen = false;
       if (overlay) overlay.style.display = 'none';
