@@ -9,7 +9,7 @@ async function run() {
     const res = await keyManager.executeWithFailover(async (aiClient, currentKey) => {
       console.log(`Đang gửi yêu cầu kiểm tra qua Luồng #${currentKey.id} (${currentKey.masked})...`);
       const response = await aiClient.models.generateContent({
-        model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
+        model: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
         contents: [
           { role: 'user', parts: [{ text: 'Xin chào, hãy chào lại ngắn gọn đúng 1 câu!' }] }
         ]

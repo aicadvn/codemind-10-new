@@ -68,6 +68,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', activeKeys: keyManager.keys.length });
 });
 
+// Danh sách các mô hình Flash hiệu năng cao theo thứ tự ưu tiên (Tự động chuyển mô hình dự phòng)
+const CANDIDATE_MODELS = [
+  process.env.GEMINI_MODEL,
+  'gemini-3.5-flash-lite',
+  'gemini-flash-lite-latest',
+  'gemini-3.8-flash',
+  'gemini-3.1-flash-lite',
+  'gemini-3.5-flash'
+].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
+
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) {
@@ -76,14 +86,28 @@ app.post('/api/chat', async (req, res) => {
 
   try {
     const replyText = await keyManager.executeWithFailover(async (aiClient, currentKey) => {
-      const response = await aiClient.models.generateContent({
-        model: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
-        contents: messages,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
+      let lastModelError = null;
+
+      for (const modelName of CANDIDATE_MODELS) {
+        try {
+          const response = await aiClient.models.generateContent({
+            model: modelName,
+            contents: messages,
+            config: {
+              systemInstruction: SYSTEM_INSTRUCTION,
+            }
+          });
+          if (response && response.text) {
+            return response.text;
+          }
+        } catch (mErr) {
+          lastModelError = mErr;
+          const errMsg = mErr.message || '';
+          console.warn(`⚠️ [ModelFallback] Luồng #${currentKey.id} - Model "${modelName}" gặp lỗi: ${errMsg.slice(0, 100)}. Đang chuyển model dự phòng...`);
         }
-      });
-      return response.text;
+      }
+
+      throw lastModelError || new Error('Tất cả các model trong danh sách dự phòng đều thất bại.');
     });
 
     res.json({ reply: cleanLatexMath(replyText) });
