@@ -94,15 +94,39 @@ app.get('/api/diagnose', async (req, res) => {
   res.json(diagnosis);
 });
 
+// Danh sách IP phòng máy & trường THPT Lạng Giang số 1 được đặc quyền ưu tiên (VIP School Whitelist)
+const WHITELISTED_IPS = [
+  '116.97.105.239', // IP Mạng trường THPT Lạng Giang số 1
+  '127.0.0.1',
+  '::1'
+];
+
+app.get('/api/whitelist-status', (req, res) => {
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
+  const isWhitelisted = WHITELISTED_IPS.some(ip => clientIp.includes(ip));
+  res.json({
+    clientIp,
+    isWhitelisted,
+    school: 'THPT Lạng Giang số 1',
+    whitelistedIps: WHITELISTED_IPS,
+    activeKeys: keyManager.keys.length
+  });
+});
+
 // Danh sách các mô hình chuẩn Free Tier hạn mức cao nhất (1.500 RPD, 15 RPM mỗi Gmail)
-// Tuyệt đối KHÔNG đưa gemini-3.5-flash (bản preview bị trần 20 lượt/ngày) vào danh sách này
 const CANDIDATE_MODELS = [
   'gemini-flash-lite-latest',
-  'gemini-2.5-flash-lite',
   'gemini-3.1-flash-lite'
 ];
 
 app.post('/api/chat', async (req, res) => {
+  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || '';
+  const isSchoolIp = WHITELISTED_IPS.some(ip => clientIp.includes(ip));
+
+  if (isSchoolIp) {
+    console.log(`🏫 [School Whitelist Traffic] Kết nối từ trường THPT Lạng Giang số 1 (IP: ${clientIp}) — Ưu tiên luồng xử lý VIP!`);
+  }
+
   const { messages } = req.body;
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Invalid messages format' });

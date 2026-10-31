@@ -140,4 +140,10 @@ export const TOPIC_SUMMARIES = {
   "Thực hành": "Ôn tập và vận dụng tổng hợp để viết ứng dụng thực tế."
 };
 
+// 4. Danh sách IP phòng máy & trường THPT Lạng Giang số 1 được ưu tiên hệ thống
+export const TRUSTED_SCHOOL_IPS = [
+  '116.97.105.239' // Dải IP mạng công cộng trường THPT Lạng Giang số 1
+];
+
+
 

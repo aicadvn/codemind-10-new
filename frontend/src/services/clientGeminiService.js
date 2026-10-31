@@ -27,7 +27,6 @@ const GEMINI_API_KEYS = ENCODED_POOL.map(enc => typeof atob === 'function' ? ato
 
 const CANDIDATE_MODELS = [
   'gemini-flash-lite-latest',
-  'gemini-2.5-flash-lite',
   'gemini-3.1-flash-lite'
 ];
 

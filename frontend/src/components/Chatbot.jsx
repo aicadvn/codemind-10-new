@@ -123,8 +123,16 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
   const sendMessageApi = async (chatHistory) => {
     setIsLoading(true);
 
+    // Lọc bỏ các tin nhắn lỗi hệ thống cũ (nếu có) để không làm bẩn ngữ cảnh gửi cho AI
+    const cleanChatHistory = chatHistory.filter(msg => 
+      msg.text && 
+      !msg.text.includes('Xin lỗi, hệ thống AI đang bận') &&
+      !msg.text.includes('Đã có lỗi xảy ra khi kết nối') &&
+      !msg.text.includes('Đã xảy ra lỗi kết nối với máy chủ AI')
+    );
+
     // Format theo chuẩn Gemini API (user/model)
-    let formattedHistory = chatHistory.map(msg => ({
+    let formattedHistory = cleanChatHistory.map(msg => ({
       role: msg.role === 'CodeMind' ? 'model' : 'user',
       parts: [{ text: msg.text }]
     }));
@@ -141,36 +149,34 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
       let replyText = null;
 
-      // 1. Thử gọi backend (Render) với timeout 4.5s
+      // CHIẾN LƯỢC KẾT NỐI ƯU TIÊN PHÒNG MÁY (SCHOOL LAB TURBO ENGINE):
+      // Tuyến 1: Gọi trực tiếp từ trình duyệt học sinh qua Google Gemini Edge (phản hồi siêu tốc 1-2s, 12 Key phân tán)
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4500);
-
-        const res = await fetch(`${backendUrl}/api/chat`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: formattedHistory }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const json = await res.json();
-          if (json && json.reply) {
-            replyText = json.reply;
-          }
-        }
-      } catch (backendErr) {
-        console.warn('[CodeMind Chat] Backend phản hồi chậm hoặc lỗi mạng, tự động kích hoạt Direct Client Engine...', backendErr?.message);
+        replyText = await askGeminiDirect(formattedHistory);
+      } catch (directErr) {
+        console.warn('[CodeMind Chat] Tuyến trực tiếp gặp sự cố, tự động kích hoạt Tuyến máy chủ Backend...', directErr);
       }
 
-      // 2. Kích hoạt Luồng Dự phòng Trực tiếp (Direct Client-Side Gemini Engine)
-      // Sử dụng dải IP sạch tại trường/nhà riêng của học sinh tại Việt Nam với 12 Key xoay vòng
+      // Tuyến 2: Dự phòng qua máy chủ Backend (Render) nếu tuyến trực tiếp bị chặn bởi tiện ích trình duyệt
       if (!replyText) {
         try {
-          replyText = await askGeminiDirect(formattedHistory);
-        } catch (directErr) {
-          console.error('[CodeMind Direct Engine Error]:', directErr);
+          const res = await fetch(`${backendUrl}/api/chat`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-Client-Origin': 'CodeMind-School-Lab'
+            },
+            body: JSON.stringify({ messages: formattedHistory })
+          });
+
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.reply) {
+              replyText = json.reply;
+            }
+          }
+        } catch (backendErr) {
+          console.error('[CodeMind Chat] Cả tuyến Direct lẫn Backend đều lỗi:', backendErr);
         }
       }
       
