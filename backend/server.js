@@ -68,7 +68,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', activeKeys: keyManager.keys.length });
 });
 
-// Chẩn đoán chi tiết hệ thống và kiểm tra trực tiếp khả năng gọi API
+// Chẩn đoán chi tiết hệ thống và kiểm tra trực tiếp khả năng gọi API của toàn bộ 12 Key
 app.get('/api/diagnose', async (req, res) => {
   const diagnosis = {
     envModel: process.env.GEMINI_MODEL,
@@ -77,18 +77,17 @@ app.get('/api/diagnose', async (req, res) => {
     tests: []
   };
 
-  if (keyManager.keys.length > 0) {
-    const k = keyManager.keys[0];
-    for (const m of CANDIDATE_MODELS) {
-      try {
-        const resp = await k.client.models.generateContent({
-          model: m,
-          contents: [{ role: 'user', parts: [{ text: 'test' }] }]
-        });
-        diagnosis.tests.push({ model: m, status: 'SUCCESS', reply: resp.text?.slice(0, 40) });
-      } catch (err) {
-        diagnosis.tests.push({ model: m, status: 'ERROR', code: err.status || err.code, msg: err.message });
-      }
+  for (let i = 0; i < keyManager.keys.length; i++) {
+    const k = keyManager.keys[i];
+    try {
+      const resp = await k.client.models.generateContent({
+        model: 'gemini-3.5-flash-lite',
+        contents: [{ role: 'user', parts: [{ text: 'ping' }] }],
+        config: { systemInstruction: SYSTEM_INSTRUCTION }
+      });
+      diagnosis.tests.push({ id: k.id, masked: k.masked, status: 'SUCCESS', reply: resp.text?.slice(0, 30) });
+    } catch (err) {
+      diagnosis.tests.push({ id: k.id, masked: k.masked, status: 'ERROR', code: err.status || err.code, msg: err.message });
     }
   }
 
