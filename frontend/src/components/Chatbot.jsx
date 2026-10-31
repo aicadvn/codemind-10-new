@@ -25,13 +25,32 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef(null);
+  const [tamperKey, setTamperKey] = useState(0);
 
   // Tự động cuộn xuống cuối đoạn chat
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, tamperKey]);
+
+  // Lá chắn chống can thiệp DOM (Anti-DOM Tampering): Tự động khôi phục nếu học sinh sửa HTML bằng DevTools
+  useEffect(() => {
+    if (!scrollRef.current) return;
+
+    const observer = new MutationObserver(() => {
+      // Bất kỳ can thiệp nào vào thẻ HTML hay text của đoạn chat sẽ kích hoạt React khôi phục lại dữ liệu gốc
+      setTamperKey(k => k + 1);
+    });
+
+    observer.observe(scrollRef.current, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Khởi tạo lời chào ban đầu nếu chưa chọn bài
   useEffect(() => {
