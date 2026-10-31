@@ -68,15 +68,40 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', activeKeys: keyManager.keys.length });
 });
 
-// Danh sách các mô hình Flash hiệu năng cao theo thứ tự ưu tiên (Tự động chuyển mô hình dự phòng)
+// Chẩn đoán chi tiết hệ thống và kiểm tra trực tiếp khả năng gọi API
+app.get('/api/diagnose', async (req, res) => {
+  const diagnosis = {
+    envModel: process.env.GEMINI_MODEL,
+    candidateModels: CANDIDATE_MODELS,
+    totalKeys: keyManager.keys.length,
+    tests: []
+  };
+
+  if (keyManager.keys.length > 0) {
+    const k = keyManager.keys[0];
+    for (const m of CANDIDATE_MODELS) {
+      try {
+        const resp = await k.client.models.generateContent({
+          model: m,
+          contents: [{ role: 'user', parts: [{ text: 'test' }] }]
+        });
+        diagnosis.tests.push({ model: m, status: 'SUCCESS', reply: resp.text?.slice(0, 40) });
+      } catch (err) {
+        diagnosis.tests.push({ model: m, status: 'ERROR', code: err.status || err.code, msg: err.message });
+      }
+    }
+  }
+
+  res.json(diagnosis);
+});
+
+// Danh sách các mô hình chuẩn Free Tier hạn mức cao nhất (1.500 RPD, 15 RPM mỗi Gmail)
+// Tuyệt đối KHÔNG đưa gemini-3.5-flash (bản preview bị trần 20 lượt/ngày) vào danh sách này
 const CANDIDATE_MODELS = [
-  process.env.GEMINI_MODEL,
   'gemini-3.5-flash-lite',
   'gemini-flash-lite-latest',
-  'gemini-3.8-flash',
-  'gemini-3.1-flash-lite',
-  'gemini-3.5-flash'
-].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
+  'gemini-3.1-flash-lite'
+];
 
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;

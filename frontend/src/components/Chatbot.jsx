@@ -119,16 +119,36 @@ export default function Chatbot({ activeLesson, errorToAnalyze }) {
 
     try {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
-      const res = await fetch(`${backendUrl}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: formattedHistory })
-      });
+      let data = null;
+      let attempts = 0;
+      const maxAttempts = 2; // Tự động thử lại 1 lần nếu gặp lúc máy chủ đổi luồng xoay vòng hoặc khởi động
 
-      const data = await res.json();
+      while (attempts < maxAttempts) {
+        attempts++;
+        try {
+          const res = await fetch(`${backendUrl}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: formattedHistory })
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json && json.reply) {
+              data = json;
+              break;
+            }
+          }
+        } catch (fetchErr) {
+          console.warn(`[CodeMind Chat] Lần gửi #${attempts} rớt kết nối, đang thử lại...`, fetchErr);
+        }
+
+        if (attempts < maxAttempts) {
+          await new Promise(r => setTimeout(r, 1200)); // Nghỉ 1.2s rồi tự động gửi lại
+        }
+      }
       
       let finalMessages = [...chatHistory];
-      if (data.reply) {
+      if (data && data.reply) {
         finalMessages.push({ role: 'CodeMind', text: cleanLatexMath(data.reply) });
       } else {
         finalMessages.push({ role: 'CodeMind', text: 'Xin lỗi, hệ thống AI đang bận. Bạn hãy thử lại sau nhé!' });

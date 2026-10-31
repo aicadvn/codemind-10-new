@@ -68,6 +68,9 @@ class GeminiKeyManager {
   /**
    * Lấy danh sách key theo thứ tự xoay vòng (Round-Robin) ưu tiên các key không bị Cooldown
    */
+  /**
+   * Lấy danh sách key theo thứ tự xoay vòng (Round-Robin) ưu tiên các key không bị Cooldown
+   */
   getOrderedKeys() {
     if (this.keys.length === 0) return [];
     const ordered = [];
@@ -82,12 +85,12 @@ class GeminiKeyManager {
     // Nhảy con trỏ sang key tiếp theo cho lượt sau
     this.currentIndex = (this.currentIndex + 1) % this.keys.length;
 
-    // Sắp xếp ưu tiên: Key đang không bị cooldown đứng trước
-    return ordered.sort((a, b) => {
-      const aCool = a.cooldownUntil > now ? 1 : 0;
-      const bCool = b.cooldownUntil > now ? 1 : 0;
-      return aCool - bCool;
-    });
+    // Phân loại: Key khỏe (hết cooldown) và Key đang hồi phục
+    const healthy = ordered.filter(k => k.cooldownUntil <= now);
+    const cooling = ordered.filter(k => k.cooldownUntil > now).sort((a, b) => a.cooldownUntil - b.cooldownUntil);
+
+    // Ưu tiên key khỏe trước, chỉ dùng key đang cooldown khi tất cả key khác đều bận
+    return [...healthy, ...cooling];
   }
 
   /**
@@ -103,15 +106,22 @@ class GeminiKeyManager {
 
     for (let attempt = 0; attempt < orderedKeys.length; attempt++) {
       const currentKey = orderedKeys[attempt];
+      const now = Date.now();
+
+      // Nếu key này đang trong thời gian cooldown và vẫn còn key khác phía sau, ưu tiên thử key sau
+      if (currentKey.cooldownUntil > now && attempt < orderedKeys.length - 1) {
+        continue;
+      }
 
       try {
         // Thực thi gọi API với Client của Key hiện tại
         const result = await actionCallback(currentKey.client, currentKey);
         
-        // Thành công: Cập nhật chỉ số hoạt động
+        // Thành công: Cập nhật chỉ số hoạt động & xóa bỏ cooldown
         currentKey.lastUsed = Date.now();
         currentKey.totalSuccess++;
         currentKey.failureCount = 0;
+        currentKey.cooldownUntil = 0;
         return result;
 
       } catch (err) {
@@ -124,9 +134,9 @@ class GeminiKeyManager {
                             errMsg.includes('Too Many Requests');
 
         if (isRateLimit) {
-          // Cooldown 60s đối với key bị cạn hạn mức
-          currentKey.cooldownUntil = Date.now() + 60000;
-          console.warn(`⚠️ [KeyManager] Luồng #${currentKey.id} (${currentKey.masked}) chạm hạn mức (429/Quota). Tự động chuyển sang luồng dự phòng tiếp theo...`);
+          // Cooldown ngắn 15s (thay vì 60s) để nhanh chóng tái sử dụng khi hết đợt xung đột tức thời
+          currentKey.cooldownUntil = Date.now() + 15000;
+          console.warn(`⚠️ [KeyManager] Luồng #${currentKey.id} (${currentKey.masked}) chạm hạn mức (429/Quota). Tạm nghỉ 15s, chuyển luồng tiếp theo...`);
         } else {
           console.warn(`⚠️ [KeyManager] Luồng #${currentKey.id} (${currentKey.masked}) gặp sự cố: ${errMsg.slice(0, 80)}. Thử luồng kế tiếp...`);
         }
